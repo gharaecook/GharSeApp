@@ -1,6 +1,9 @@
 spring:
   application:
     name: gharse
+  config:
+    # Loads backend/.env (git-ignored) when present; see .env.example.
+    import: optional:file:.env[.properties]
   profiles:
     default: local
   datasource:
