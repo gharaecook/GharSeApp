@@ -1,0 +1,49 @@
+# API
+
+Base path `/api/v1`. JSON in and out. Interactive docs: **`/swagger-ui.html`** (OpenAPI at `/v3/api-docs`), enabled in
+the `local` and `test` profiles only.
+
+Authenticate with `Authorization: Bearer <accessToken>`. Roles: `CUSTOMER`, `COOK`, `ADMIN`.
+
+## Errors
+
+```json
+{ "timestamp": "2026-10-05T14:00:00Z", "status": 400, "code": "VALIDATION_ERROR", "message": "Invalid request",
+  "path": "/api/v1/auth/register", "errors": [ { "field": "email", "message": "must be a well-formed email address" } ] }
+```
+
+Common codes: `VALIDATION_ERROR` 400, `UNAUTHORIZED` 401, `FORBIDDEN` 403, `NOT_FOUND` 404, `RATE_LIMITED` 429,
+`INTERNAL_ERROR` 500. Business codes: `EMAIL_TAKEN`, `COOK_NOT_APPROVED`, `CART_OTHER_COOK`, `CART_EMPTY`,
+`BATCH_SOLD_OUT`, `BATCH_CAPACITY_EXCEEDED`, `ORDERING_CLOSED`, `DISH_INACTIVE`, `DELIVERY_ADDRESS_REQUIRED`,
+`INVALID_ORDER_TRANSITION`, `ORDER_NOT_CANCELLABLE`, `ORDER_NOT_COMPLETED`, `REVIEW_ALREADY_EXISTS`, `FSSAI_REQUIRED`,
+`BATCH_*` validation codes.
+
+## Auth (public)
+`POST /auth/register` `{name, phone, email, password(8+), role: CUSTOMER|COOK, locality?}` → `{accessToken, refreshToken, user}`
+`POST /auth/login` `{email, password}` · `POST /auth/refresh` `{refreshToken}` · `GET|PUT /users/me`
+
+## Discovery (public)
+- `GET /cooks?q&cuisine&category&vegetarian&minRating&availableToday&locality&lat&lng&sort=rating|newest|popular&page&size`
+- `GET /cooks/{id}` (adds `favorite` when logged in) · `GET /cooks/{id}/dishes` · `GET /cooks/{id}/batches` · `GET /cooks/{id}/reviews`
+- `GET /dishes/{id}` · `GET /cuisines` · `GET /batches?today&limited&limit`
+
+## Customer
+- Cart: `GET /cart`, `POST /cart/items {dishId,batchId,quantity}`, `PUT /cart/items/{id} {quantity}`, `DELETE /cart/items/{id}`, `DELETE /cart`
+- Orders: `POST /orders {orderType: PICKUP|COOK_DELIVERY|THIRD_PARTY_DELIVERY, deliveryAddress?}`, `GET /orders`, `GET /orders/{id}`, `POST /orders/{id}/cancel`
+- Review: `POST /orders/{id}/review {rating, tasteRating?, hygieneRating?, packagingRating?, reliabilityRating?, comment?}`
+- Favorites: `POST|DELETE /cooks/{id}/favorite`, `GET /favorites`
+- `GET /notifications`, `POST /notifications/{id}/read` (any logged-in user)
+- `POST /files?folder=profiles|dishes|kitchens|documents` multipart `file` (JPEG/PNG/WebP/PDF, ≤ 5 MB) → `{url}`
+
+## Cook
+- `GET|PUT /cook/profile`, `POST /cook/documents`, `GET /cook/dashboard`, `GET /cook/earnings`
+- `GET|POST /cook/dishes`, `PUT|DELETE /cook/dishes/{id}` (DELETE deactivates)
+- `GET|POST /cook/batches`, `PUT /cook/batches/{id}`
+- `GET /cook/orders?status=A,B`, `GET /cook/orders/{id}`
+- `POST /cook/orders/{id}/confirm | prepare | ready | dispatch | handover | complete`
+
+## Admin
+`GET /admin/dashboard`, `GET /admin/cooks?status`, `GET /admin/cooks/pending`, `GET /admin/cooks/{id}`,
+`POST /admin/cooks/{id}/approve`, `POST /admin/cooks/{id}/reject {reason}`, `GET /admin/orders?status`, `GET /admin/users?role`
+
+Lists return `{content, page, size, totalElements, totalPages}`.

@@ -1,0 +1,14 @@
+# Production (Render + Supabase). All secrets come from environment variables.
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 5
+
+gharse:
+  seed:
+    enabled: false
+
+logging:
+  structured:
+    format:
+      console: ecs

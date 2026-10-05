@@ -1,0 +1,14 @@
+gharse:
+  jwt:
+    secret: test-only-secret-test-only-secret-test-only-secret-0123456789
+  rate-limit:
+    enabled: false
+  seed:
+    enabled: false
+  storage:
+    local-dir: ./target/test-uploads
+  cook:
+    fssai-required: false
+springdoc:
+  api-docs:
+    enabled: true

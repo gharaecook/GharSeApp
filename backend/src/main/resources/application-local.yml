@@ -1,0 +1,23 @@
+# Local development: docker compose PostgreSQL, demo data, Swagger UI.
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/gharse}
+    username: ${DATABASE_USERNAME:gharse}
+    password: ${DATABASE_PASSWORD:gharse}
+
+gharse:
+  jwt:
+    # Local-only default. Never used outside the `local`/`test` profiles.
+    secret: ${JWT_SECRET:local-dev-only-secret-change-me-0123456789-abcdefghijklmnop}
+  seed:
+    enabled: true
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+logging:
+  level:
+    com.gharse: DEBUG

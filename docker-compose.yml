@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gharse-postgres
+    environment:
+      POSTGRES_DB: gharse
+      POSTGRES_USER: gharse
+      POSTGRES_PASSWORD: gharse
+    ports:
+      - "5432:5432"
+    volumes:
+      - gharse-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gharse -d gharse"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Optional: run the whole stack in containers with `docker compose --profile full up --build`.
+  backend:
+    profiles: ["full"]
+    build: ./backend
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      DATABASE_URL: jdbc:postgresql://postgres:5432/gharse
+      DATABASE_USERNAME: gharse
+      DATABASE_PASSWORD: gharse
+      FRONTEND_URL: http://localhost:5173
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    profiles: ["full"]
+    build: ./frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  gharse-pgdata:
