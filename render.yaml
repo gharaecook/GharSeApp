@@ -1,0 +1,30 @@
+# Render Blueprint for the GharSe backend (Spring Boot, Docker) -> Supabase PostgreSQL.
+# Secrets are never stored here: variables marked `sync: false` are entered in the Render dashboard.
+# See docs/deployment.md for the full walkthrough.
+services:
+  - type: web
+    name: gharse-backend
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    region: singapore          # closest Render region to the Supabase Tokyo pooler
+    plan: free                 # free instances sleep when idle; use `starter` for always-on
+    healthCheckPath: /actuator/health
+    autoDeploy: true
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      # Supabase: use the Session pooler (IPv4). The direct db.<ref>.supabase.co host is IPv6-only.
+      #   DATABASE_URL      jdbc:postgresql://aws-0-<region>.pooler.supabase.com:5432/postgres?sslmode=require
+      #   DATABASE_USERNAME postgres.<project-ref>
+      - key: DATABASE_URL
+        sync: false
+      - key: postgres.knfteedllcvoikcmbuvh
+        sync: false
+      - key: uWgJTXWpBJicliQ5
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true    # Render generates a random secret once
+      # Exact origin(s) of the Vercel site, no trailing slash, comma separated for several.
+      - key: https://ghar-se-cook-fsjve3o0z-ghar-se1.vercel.app
+        sync: false
