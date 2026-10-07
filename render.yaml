@@ -19,12 +19,12 @@ services:
       #   DATABASE_USERNAME postgres.<project-ref>
       - key: DATABASE_URL
         sync: false
-      - key: postgres.knfteedllcvoikcmbuvh
+      - key: DATABASE_USERNAME
         sync: false
-      - key: uWgJTXWpBJicliQ5
+      - key: DATABASE_PASSWORD
         sync: false
       - key: JWT_SECRET
         generateValue: true    # Render generates a random secret once
       # Exact origin(s) of the Vercel site, no trailing slash, comma separated for several.
-      - key: https://ghar-se-cook-fsjve3o0z-ghar-se1.vercel.app
+      - key: FRONTEND_URL
         sync: false
