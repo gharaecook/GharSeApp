@@ -14,7 +14,8 @@ public record AppProperties(
         Order order,
         RateLimit rateLimit,
         Seed seed,
-        AdminBootstrap adminBootstrap) {
+        AdminBootstrap adminBootstrap,
+        Auth auth) {
 
     public record Jwt(String secret, int accessTokenMinutes, int refreshTokenDays) {}
 
@@ -29,4 +30,6 @@ public record AppProperties(
     public record Seed(boolean enabled) {}
 
     public record AdminBootstrap(String email, String password) {}
+
+    public record Auth(boolean exposeResetToken) {}
 }

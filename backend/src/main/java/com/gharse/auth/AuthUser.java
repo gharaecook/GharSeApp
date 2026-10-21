@@ -7,7 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 /** The authenticated principal placed in the security context from a validated JWT. */
-public record AuthUser(UUID id, String email, UserRole role) {
+public record AuthUser(UUID id, String email, UserRole role, int credentialVersion) {
 
     public static AuthUser current() {
         Authentication a = SecurityContextHolder.getContext().getAuthentication();

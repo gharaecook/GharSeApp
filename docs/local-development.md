@@ -6,6 +6,8 @@ See the README for the three-command quick start. Details:
 - `./mvnw spring-boot:run` uses the `local` profile: Postgres at `localhost:5432/gharse`, demo data, Swagger UI, DEBUG logs.
 - Override anything with env vars (`DATABASE_URL`, `JWT_SECRET`, …). `local` ships a dev-only JWT secret.
 - Uploads are stored in `./uploads` and served at `/uploads/**`.
+- Forgot-password requests return a one-time reset token in the local profile for manual testing. Production hides this
+  token; configure an email or another secure delivery provider before enabling password resets for production users.
 - Reset the database: `docker compose down -v && docker compose up -d postgres`.
 
 ## Tests

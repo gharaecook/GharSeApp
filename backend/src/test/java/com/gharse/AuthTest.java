@@ -3,11 +3,16 @@ package com.gharse;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.gharse.auth.PasswordResetToken;
+import com.gharse.auth.PasswordResetTokenRepository;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 
 class AuthTest extends IntegrationTestBase {
+
+    @Autowired private PasswordResetTokenRepository resetTokens;
 
     @Test
     void registerCustomerReturnsTokensAndNeverExposesThePassword() {
@@ -75,6 +80,41 @@ class AuthTest extends IntegrationTestBase {
         assertThat(refreshed.get("accessToken").asText()).isNotBlank();
         post("/api/v1/auth/refresh", null, Map.of("refreshToken", login.get("accessToken").asText()), 401);
         post("/api/v1/auth/refresh", null, Map.of("refreshToken", "garbage"), 401);
+    }
+
+    @Test
+    void passwordCanBeResetOnceUsingAnExpiringToken() {
+        Acct account = registerCustomer();
+        String oldRefreshToken = post("/api/v1/auth/login", null,
+                Map.of("email", account.email(), "password", PASSWORD)).path("refreshToken").asText();
+        JsonNode response = post("/api/v1/auth/forgot-password", null, Map.of("email", account.email()));
+        String resetToken = response.path("resetToken").asText();
+
+        assertThat(resetToken).isNotBlank();
+        assertThat(response.path("message").asText()).contains("If an account exists");
+        var storedTokens = resetTokens.findAllByUser_Id(account.userId());
+        assertThat(storedTokens).hasSize(1);
+        assertThat(storedTokens.getFirst().getTokenHash()).hasSize(64).isNotEqualTo(resetToken);
+
+        post("/api/v1/auth/reset-password", null, Map.of("token", resetToken, "newPassword", "NewPassw0rd!"), 204);
+        assertThat(users.findByEmail(account.email()).orElseThrow().getPasswordHash()).isNotEqualTo(PASSWORD);
+        assertThat(post("/api/v1/auth/login", null, Map.of("email", account.email(), "password", "NewPassw0rd!"))
+                .path("accessToken").asText()).isNotBlank();
+        post("/api/v1/auth/login", null, Map.of("email", account.email(), "password", PASSWORD), 401);
+        post("/api/v1/auth/refresh", null, Map.of("refreshToken", oldRefreshToken), 401);
+        assertThat(post("/api/v1/auth/reset-password", null,
+                Map.of("token", resetToken, "newPassword", "AnotherPassw0rd!"), 400).path("code").asText())
+                .isEqualTo("INVALID_RESET_TOKEN");
+    }
+
+    @Test
+    void forgotPasswordUsesSameResponseForUnknownAccounts() {
+        String email = unique() + "@test.gharse";
+        JsonNode existing = post("/api/v1/auth/forgot-password", null, Map.of("email", registerCustomer().email()));
+        JsonNode unknown = post("/api/v1/auth/forgot-password", null, Map.of("email", email));
+
+        assertThat(existing.path("message").asText()).isEqualTo(unknown.path("message").asText());
+        assertThat(unknown.has("resetToken")).isFalse();
     }
 
     @Test

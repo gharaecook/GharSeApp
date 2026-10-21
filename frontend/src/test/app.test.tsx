@@ -48,6 +48,15 @@ describe('routing and guards', () => {
   it('shows the login form', () => {
     renderAt('/login')
     expect(screen.getByRole('heading', { name: /welcome back/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /forgot password/i })).toHaveAttribute('href', '/forgot-password')
+  })
+  it('renders password reset request and missing-token states', () => {
+    const forgot = renderAt('/forgot-password')
+    expect(screen.getByRole('heading', { name: /forgot password/i })).toBeInTheDocument()
+    forgot.unmount()
+    renderAt('/reset-password')
+    expect(screen.getByRole('heading', { name: /set a new password/i })).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent(/missing its token/i)
   })
   it('redirects anonymous visitors from protected pages to login', async () => {
     renderAt('/cart')

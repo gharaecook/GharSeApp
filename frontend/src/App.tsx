@@ -6,7 +6,7 @@ import Home from './pages/Home'
 import Cooks from './pages/Cooks'
 import CookProfilePage from './pages/CookProfilePage'
 import DishPage from './pages/DishPage'
-import { Login, Register } from './pages/AuthPages'
+import { ForgotPassword, Login, Register, ResetPassword } from './pages/AuthPages'
 import CartPage from './pages/CartPage'
 import Checkout from './pages/Checkout'
 import { OrderDetail, Orders } from './pages/Orders'
@@ -31,6 +31,8 @@ export default function App() {
         <Route path="/dishes/:id" element={<DishPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         <Route element={<RequireRole role="CUSTOMER" />}>
           <Route path="/cart" element={<CartPage />} />
