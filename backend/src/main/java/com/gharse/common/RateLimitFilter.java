@@ -22,7 +22,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest req) {
         String uri = req.getRequestURI();
         boolean credentialEndpoint = uri.equals("/api/v1/auth/login") || uri.equals("/api/v1/auth/register")
-                || uri.equals("/api/v1/auth/refresh");
+                || uri.equals("/api/v1/auth/refresh") || uri.equals("/api/v1/auth/forgot-password")
+                || uri.equals("/api/v1/auth/reset-password");
         return !credentialEndpoint;
     }
 

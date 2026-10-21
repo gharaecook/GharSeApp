@@ -11,6 +11,8 @@ gharse:
     secret: ${JWT_SECRET:local-dev-only-secret-change-me-0123456789-abcdefghijklmnop}
   seed:
     enabled: true
+  auth:
+    expose-reset-token: true
 
 springdoc:
   api-docs:

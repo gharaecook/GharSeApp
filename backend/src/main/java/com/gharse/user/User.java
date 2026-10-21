@@ -33,6 +33,9 @@ public class User extends BaseEntity {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
+    @Column(name = "credential_version", nullable = false)
+    private int credentialVersion;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserRole role;

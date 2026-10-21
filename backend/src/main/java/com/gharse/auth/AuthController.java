@@ -1,9 +1,12 @@
 package com.gharse.auth;
 
 import com.gharse.auth.AuthDtos.AuthResponse;
+import com.gharse.auth.AuthDtos.ForgotPasswordRequest;
+import com.gharse.auth.AuthDtos.ForgotPasswordResponse;
 import com.gharse.auth.AuthDtos.LoginRequest;
 import com.gharse.auth.AuthDtos.RefreshRequest;
 import com.gharse.auth.AuthDtos.RegisterRequest;
+import com.gharse.auth.AuthDtos.ResetPasswordRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,6 +35,17 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest r) {
         return service.login(r);
+    }
+
+    @PostMapping("/forgot-password")
+    public ForgotPasswordResponse forgotPassword(@Valid @RequestBody ForgotPasswordRequest r) {
+        return service.forgotPassword(r.email());
+    }
+
+    @PostMapping("/reset-password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void resetPassword(@Valid @RequestBody ResetPasswordRequest r) {
+        service.resetPassword(r.token(), r.newPassword());
     }
 
     @PostMapping("/refresh")

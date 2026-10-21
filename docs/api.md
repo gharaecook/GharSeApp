@@ -21,6 +21,11 @@ Common codes: `VALIDATION_ERROR` 400, `UNAUTHORIZED` 401, `FORBIDDEN` 403, `NOT_
 ## Auth (public)
 `POST /auth/register` `{name, phone, email, password(8+), role: CUSTOMER|COOK, locality?}` → `{accessToken, refreshToken, user}`
 `POST /auth/login` `{email, password}` · `POST /auth/refresh` `{refreshToken}` · `GET|PUT /users/me`
+- `POST /auth/forgot-password` `{email}` → generic confirmation and (when enabled for local/manual delivery) `resetToken`.
+- `POST /auth/reset-password` `{token, newPassword(8+)}` → `204`; tokens expire after 30 minutes and work once.
+  The database stores only a token hash. The raw token is returned only in local and test profiles; production hides it.
+  Email delivery is not implemented, so production needs a delivery provider before users can complete this flow.
+  Resetting a password invalidates refresh tokens; already-issued access tokens expire normally.
 
 ## Discovery (public)
 - `GET /cooks?q&cuisine&category&vegetarian&minRating&availableToday&locality&lat&lng&sort=rating|newest|popular&page&size`

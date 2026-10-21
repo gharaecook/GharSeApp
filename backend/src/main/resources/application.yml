@@ -69,6 +69,8 @@ gharse:
   admin-bootstrap:
     email: ${ADMIN_EMAIL:}
     password: ${ADMIN_PASSWORD:}
+  auth:
+    expose-reset-token: false
 
 springdoc:
   api-docs:

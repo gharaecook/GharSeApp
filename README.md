@@ -92,6 +92,7 @@ rate limiting) are interfaces so they can be added later. See [docs/future-roadm
 ## Known MVP limitations
 
 - Payment and courier delivery are **mocks** (`MockPaymentProvider`, `MockDeliveryProvider`).
+- Password reset tokens are shown only in local/test for manual testing; production email delivery is not implemented.
 - File storage is **local disk** only. Render's disk is ephemeral, so an S3-compatible `StorageService` implementation
   is required before real production use (the interface and env vars are in place).
 - Refresh tokens are stateless JWTs (no server-side revocation list yet).

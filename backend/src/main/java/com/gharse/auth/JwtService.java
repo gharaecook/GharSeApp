@@ -65,6 +65,7 @@ public class JwtService {
                 .subject(u.getId().toString())
                 .claim("email", u.getEmail())
                 .claim("role", u.getRole().name())
+                .claim("credentialVersion", u.getCredentialVersion())
                 .claim(TYPE, type)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plus(ttl)))
@@ -78,7 +79,8 @@ public class JwtService {
                     .parseSignedClaims(token).getPayload();
             if (!expectedType.equals(c.get(TYPE, String.class))) return Optional.empty();
             return Optional.of(new AuthUser(UUID.fromString(c.getSubject()), c.get("email", String.class),
-                    UserRole.valueOf(c.get("role", String.class))));
+                    UserRole.valueOf(c.get("role", String.class)),
+                    Optional.ofNullable(c.get("credentialVersion", Integer.class)).orElse(0)));
         } catch (JwtException | IllegalArgumentException e) {
             return Optional.empty();
         }

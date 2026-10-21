@@ -5,6 +5,8 @@ gharse:
     enabled: false
   seed:
     enabled: false
+  auth:
+    expose-reset-token: true
   storage:
     local-dir: ./target/test-uploads
   cook:
