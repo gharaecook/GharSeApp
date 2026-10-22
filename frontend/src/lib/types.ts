@@ -55,6 +55,7 @@ export interface Order {
   subtotal: number; deliveryFee: number; totalAmount: number; orderType: OrderType; paymentStatus: string
   orderStatus: OrderStatusValue; deliveryAddress?: string; pickupAddress?: string; deliveryProvider?: string
   trackingUrl?: string; canCancel: boolean; reviewed: boolean; createdAt: string; updatedAt: string
+  paymentCheckout?: { provider: string; keyId: string; orderId: string; amount: number; currency: string }
 }
 
 export interface Review {

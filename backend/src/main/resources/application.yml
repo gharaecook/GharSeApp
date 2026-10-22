@@ -61,6 +61,10 @@ gharse:
     fssai-required: false
   order:
     cook-delivery-fee: 30.00
+  payment:
+    provider: ${PAYMENT_PROVIDER:mock}
+    razorpay-key-id: ${RAZORPAY_KEY_ID:}
+    razorpay-key-secret: ${RAZORPAY_KEY_SECRET:}
   rate-limit:
     enabled: true
     auth-requests-per-minute: 20

@@ -4,6 +4,7 @@ import com.gharse.auth.AuthUser;
 import com.gharse.common.PageResponse;
 import com.gharse.order.OrderDtos.CreateOrderRequest;
 import com.gharse.order.OrderDtos.OrderResponse;
+import com.gharse.order.OrderDtos.VerifyPaymentRequest;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -26,11 +27,17 @@ public class OrderController {
         this.service = service;
     }
 
-    /** Turns the current cart into an order and pays for it through the (mock) payment provider. */
+    /** Turns the current cart into an order and creates a payment with the configured provider. */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public OrderResponse create(@Valid @RequestBody CreateOrderRequest r) {
         return service.create(AuthUser.current().id(), r);
+    }
+
+    @PostMapping("/{id}/payment/verify")
+    public OrderResponse verifyPayment(@PathVariable UUID id, @Valid @RequestBody VerifyPaymentRequest r) {
+        return service.verifyPayment(AuthUser.current().id(), id, r.razorpayOrderId(),
+                r.razorpayPaymentId(), r.razorpaySignature());
     }
 
     @GetMapping

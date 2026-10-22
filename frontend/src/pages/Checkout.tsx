@@ -54,8 +54,8 @@ export default function Checkout() {
             {type === 'PICKUP' && <p className="mt-3 text-sm text-ink-500">The pickup address is shared once {c.cookName} confirms your order.</p>}
           </Card>
           <Card className="p-5">
-            <h2 className="mb-1 text-lg">Payment</h2>
-            <p className="text-sm text-ink-500">Demo payment: your order is paid instantly with a mock provider. No real money moves.</p>
+            <h2 className="mb-1 text-lg">Online payment</h2>
+            <p className="text-sm text-ink-500">Pay securely after placing your order. Your order is sent to the cook after payment is confirmed.</p>
           </Card>
         </div>
         <Card className="h-fit p-5">
@@ -69,7 +69,7 @@ export default function Checkout() {
             <div className="flex justify-between text-base font-extrabold"><span>Total</span><span>{rupees(c.subtotal + fee)}</span></div>
           </div>
           <FormError error={place.error} />
-          <Button className="mt-4 w-full" loading={place.isPending} disabled={needsAddress && !addr.trim() && !user?.address} onClick={() => place.mutate()}>Place order</Button>
+          <Button className="mt-4 w-full" loading={place.isPending} disabled={needsAddress && !addr.trim() && !user?.address} onClick={() => place.mutate()}>Place order &amp; pay</Button>
         </Card>
       </div>
     </div>

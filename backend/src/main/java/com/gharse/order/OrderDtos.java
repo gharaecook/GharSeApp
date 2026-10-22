@@ -1,6 +1,7 @@
 package com.gharse.order;
 
 import com.gharse.payment.PaymentStatus;
+import com.gharse.payment.PaymentCheckout;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -38,5 +39,9 @@ public final class OrderDtos {
                                 BigDecimal totalAmount, OrderType orderType, PaymentStatus paymentStatus,
                                 OrderStatus orderStatus, String deliveryAddress, String pickupAddress,
                                 String deliveryProvider, String trackingUrl, boolean canCancel, boolean reviewed,
-                                Instant createdAt, Instant updatedAt) {}
+                                Instant createdAt, Instant updatedAt, PaymentCheckout paymentCheckout) {}
+
+    public record VerifyPaymentRequest(@jakarta.validation.constraints.NotBlank String razorpayOrderId,
+                                       @jakarta.validation.constraints.NotBlank String razorpayPaymentId,
+                                       @jakarta.validation.constraints.NotBlank String razorpaySignature) {}
 }

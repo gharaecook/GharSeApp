@@ -7,6 +7,54 @@ import type { Cart, Order, Page } from '../lib/types'
 import { OrderStatusBadge, OrderTracker } from '../components/cards'
 import { Badge, Button, Card, EmptyState, ErrorState, FormError, LoadingState, Modal, PageTitle, StarInput, Textarea } from '../components/ui'
 
+type RazorpayCheckoutResponse = {
+  razorpay_order_id: string
+  razorpay_payment_id: string
+  razorpay_signature: string
+}
+
+type RazorpayOptions = {
+  key: string
+  amount: number
+  currency: string
+  name: string
+  description: string
+  order_id: string
+  handler: (response: RazorpayCheckoutResponse) => void
+  modal: { ondismiss: () => void }
+}
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: RazorpayOptions) => { open: () => void }
+  }
+}
+
+function loadRazorpay(): Promise<void> {
+  if (window.Razorpay) return Promise.resolve()
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector<HTMLScriptElement>('script[src="https://checkout.razorpay.com/v1/checkout.js"]')
+    const script = existing ?? document.createElement('script')
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+    const onLoad = () => {
+      script.dataset.loaded = 'true'
+      if (window.Razorpay) resolve()
+      else reject(new Error('Razorpay checkout could not be initialized'))
+    }
+    const onError = () => {
+      script.remove()
+      reject(new Error('Could not load Razorpay checkout. Check your connection and try again.'))
+    }
+    if (existing?.dataset.loaded === 'true') {
+      reject(new Error('Razorpay checkout could not be initialized'))
+    } else {
+      script.addEventListener('load', onLoad, { once: true })
+      script.addEventListener('error', onError, { once: true })
+      if (!existing) document.body.appendChild(script)
+    }
+  })
+}
+
 export function Orders() {
   const orders = useQuery({ queryKey: ['orders'], queryFn: () => api.get<Page<Order>>('/orders?size=50') })
   if (orders.isLoading) return <LoadingState />
@@ -40,6 +88,8 @@ export function OrderDetail() {
   const placed = (useLocation().state as { placed?: boolean } | null)?.placed
   const qc = useQueryClient()
   const [reviewOpen, setReviewOpen] = useState(false)
+  const [openingPayment, setOpeningPayment] = useState(false)
+  const [paymentError, setPaymentError] = useState('')
   const order = useQuery({ queryKey: ['order', id], queryFn: () => api.get<Order>(`/orders/${id}`), refetchInterval: 15_000 })
   const cancel = useMutation({
     mutationFn: () => api.post<Order>(`/orders/${id}/cancel`),
@@ -54,14 +104,58 @@ export function OrderDetail() {
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['cart'] }); navigate('/cart') },
   })
+  const verifyPayment = useMutation({
+    mutationFn: (response: RazorpayCheckoutResponse) => api.post<Order>(`/orders/${id}/payment/verify`, {
+      razorpayOrderId: response.razorpay_order_id,
+      razorpayPaymentId: response.razorpay_payment_id,
+      razorpaySignature: response.razorpay_signature,
+    }),
+    onSuccess: (paidOrder) => {
+      qc.setQueryData(['order', id], paidOrder)
+      qc.invalidateQueries({ queryKey: ['orders'] })
+      setPaymentError('')
+      setOpeningPayment(false)
+    },
+    onError: (error) => {
+      setPaymentError(error instanceof Error ? error.message : 'Payment verification failed. Please try again.')
+      setOpeningPayment(false)
+    },
+  })
 
   if (order.isLoading) return <LoadingState />
   if (order.error) return <ErrorState error={order.error} onRetry={order.refetch} />
   const o = order.data!
 
+  const startPayment = async () => {
+    const checkout = o.paymentCheckout
+    if (!checkout) return
+    setPaymentError('')
+    setOpeningPayment(true)
+    try {
+      await loadRazorpay()
+      if (!window.Razorpay) throw new Error('Razorpay checkout could not be initialized')
+      const payment = new window.Razorpay({
+        key: checkout.keyId,
+        amount: checkout.amount,
+        currency: checkout.currency,
+        name: 'GharSe',
+        description: `Payment for order #${o.orderNumber}`,
+        order_id: checkout.orderId,
+        handler: (response) => { verifyPayment.mutate(response) },
+        modal: { ondismiss: () => setOpeningPayment(false) },
+      })
+      payment.open()
+    } catch (error) {
+      setPaymentError(error instanceof Error ? error.message : 'Could not start payment. Please try again.')
+      setOpeningPayment(false)
+    }
+  }
+
   return (
     <div className="container-page max-w-3xl py-8">
-      {placed && <div role="status" className="mb-4 rounded-2xl bg-leaf-100 p-4 font-bold text-leaf-700">🎉 Order placed! {o.cookName} will confirm it shortly.</div>}
+      {placed && <div role="status" className="mb-4 rounded-2xl bg-leaf-100 p-4 font-bold text-leaf-700">
+        {o.paymentStatus === 'PAID' ? `🎉 Order placed! ${o.cookName} will confirm it shortly.` : 'Order created. Complete payment to send it to the cook.'}
+      </div>}
       <PageTitle title={`Order #${o.orderNumber}`} subtitle={formatDateTime(o.createdAt)} action={<OrderStatusBadge status={o.orderStatus} />} />
       <Card className="p-5">
         <Link to={`/cooks/${o.cookId}`} className="text-lg font-extrabold text-brand-700 hover:underline">{o.cookName}'s Kitchen</Link>
@@ -84,7 +178,14 @@ export function OrderDetail() {
         </div>
         <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
           <div><p className="font-bold text-ink-500">{orderTypeLabel[o.orderType]}</p>{o.deliveryAddress && <p>{o.deliveryAddress}</p>}{o.pickupAddress && <p>Pickup from: {o.pickupAddress}</p>}{o.trackingUrl && <p className="break-all text-xs text-ink-500">Courier: {o.deliveryProvider}</p>}</div>
-          <div><p className="font-bold text-ink-500">Payment</p><Badge tone={o.paymentStatus === 'PAID' ? 'green' : 'neutral'}>{o.paymentStatus.replace('_', ' ')}</Badge></div>
+          <div>
+            <p className="font-bold text-ink-500">Payment</p>
+            <Badge tone={o.paymentStatus === 'PAID' ? 'green' : 'neutral'}>{o.paymentStatus.replace('_', ' ')}</Badge>
+            {o.paymentStatus === 'PENDING' && o.paymentCheckout && (
+              <Button className="mt-2" loading={openingPayment || verifyPayment.isPending} onClick={startPayment}>Pay securely</Button>
+            )}
+            {paymentError && <p role="alert" className="mt-2 text-sm text-red-700">{paymentError}</p>}
+          </div>
         </div>
       </Card>
 

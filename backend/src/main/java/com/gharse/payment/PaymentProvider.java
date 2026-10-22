@@ -12,7 +12,11 @@ public interface PaymentProvider {
 
     Result charge(String orderNumber, BigDecimal amount);
 
+    boolean verifyPayment(String providerOrderId, String providerPaymentId, String signature);
+
+    String checkoutKeyId();
+
     Result refund(String providerPaymentId, BigDecimal amount);
 
-    record Result(PaymentStatus status, String providerPaymentId) {}
+    record Result(PaymentStatus status, String providerOrderId, String providerPaymentId, String providerRefundId) {}
 }

@@ -19,6 +19,7 @@ import com.gharse.order.OrderDtos.CreateOrderRequest;
 import com.gharse.order.OrderDtos.OrderItemResponse;
 import com.gharse.order.OrderDtos.OrderResponse;
 import com.gharse.payment.PaymentService;
+import com.gharse.payment.PaymentCheckout;
 import com.gharse.payment.PaymentStatus;
 import com.gharse.review.ReviewRepository;
 import com.gharse.user.User;
@@ -38,7 +39,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Order creation (atomic capacity reservation, price snapshot, mock payment) and the order lifecycle.
+ * Order creation (atomic capacity reservation, price snapshot, payment) and the order lifecycle.
  * Customers and cooks only ever see their own orders; anything else is reported as 404 so ids cannot be probed.
  */
 @Service
@@ -151,9 +152,10 @@ public class OrderService {
         order.setPaymentStatus(PaymentStatus.PENDING);
         order = orders.saveAndFlush(order);
 
-        // 4. Pay through the provider abstraction (mock in the MVP).
-        PaymentStatus paid = payments.charge(order.getId(), order.getOrderNumber(), order.getTotalAmount());
-        if (paid != PaymentStatus.PAID && paid != PaymentStatus.AUTHORIZED) {
+        // 4. Create a payment through the configured provider.
+        PaymentService.ChargeResult charge = payments.charge(order.getId(), order.getOrderNumber(), order.getTotalAmount());
+        PaymentStatus paid = charge.status();
+        if (paid != PaymentStatus.PAID && paid != PaymentStatus.AUTHORIZED && paid != PaymentStatus.PENDING) {
             throw new ApiException(HttpStatus.PAYMENT_REQUIRED, "PAYMENT_FAILED", "Payment failed. You have not been charged.");
         }
         order.setPaymentStatus(paid);
@@ -161,9 +163,10 @@ public class OrderService {
         cart.getItems().clear();
         cart.setCook(null);
 
-        notifications.notify(cook.getUser().getId(), NotificationType.ORDER_PLACED, "New order " + order.getOrderNumber(),
-                customer.getName() + " ordered from you (" + order.getTotalAmount() + "). Confirm it to get started.");
-        return toResponse(order, true);
+        if (paid == PaymentStatus.PAID || paid == PaymentStatus.AUTHORIZED) {
+            notifyCookOfOrder(order);
+        }
+        return toResponse(order, true, charge.checkout());
     }
 
     @Transactional(readOnly = true)
@@ -174,7 +177,22 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public OrderResponse myOrder(UUID customerId, UUID orderId) {
-        return toResponse(orders.findByIdAndCustomerId(orderId, customerId).orElseThrow(() -> ApiException.notFound("Order")), true);
+        Order order = orders.findByIdAndCustomerId(orderId, customerId).orElseThrow(() -> ApiException.notFound("Order"));
+        return toResponse(order, true, payments.checkoutForOrder(orderId));
+    }
+
+    public OrderResponse verifyPayment(UUID customerId, UUID orderId, String razorpayOrderId,
+                                       String razorpayPaymentId, String razorpaySignature) {
+        Order order = orders.findByIdAndCustomerId(orderId, customerId).orElseThrow(() -> ApiException.notFound("Order"));
+        if (order.getOrderStatus() != OrderStatus.CREATED || order.getPaymentStatus() == PaymentStatus.FAILED
+                || order.getPaymentStatus() == PaymentStatus.REFUNDED) {
+            throw ApiException.conflict("ORDER_NOT_PAYABLE", "This order can no longer be paid");
+        }
+        boolean wasPaid = order.getPaymentStatus() == PaymentStatus.PAID;
+        PaymentStatus status = payments.verify(orderId, razorpayOrderId, razorpayPaymentId, razorpaySignature);
+        order.setPaymentStatus(status);
+        if (!wasPaid) notifyCookOfOrder(order);
+        return toResponse(order, true);
     }
 
     /** Only CREATED orders can be cancelled; the reserved portions go back to the batch and the payment is refunded. */
@@ -188,11 +206,17 @@ public class OrderService {
         o.getItems().forEach(i -> qtyByBatch.merge(i.getBatch().getId(), i.getQuantity(), Integer::sum));
         qtyByBatch.forEach(batches::release);
         o.setOrderStatus(OrderStatus.CANCELLED);
+        boolean notifiedCook = o.getPaymentStatus() == PaymentStatus.PAID || o.getPaymentStatus() == PaymentStatus.AUTHORIZED;
         if (o.getPaymentStatus() == PaymentStatus.PAID) {
             o.setPaymentStatus(payments.refund(o.getId(), o.getTotalAmount()));
+        } else if (o.getPaymentStatus() == PaymentStatus.PENDING) {
+            payments.cancelPending(o.getId());
+            o.setPaymentStatus(PaymentStatus.FAILED);
         }
-        notifications.notify(o.getCook().getUser().getId(), NotificationType.ORDER_CANCELLED,
-                "Order " + o.getOrderNumber() + " cancelled", "The customer cancelled this order.");
+        if (notifiedCook) {
+            notifications.notify(o.getCook().getUser().getId(), NotificationType.ORDER_CANCELLED,
+                    "Order " + o.getOrderNumber() + " cancelled", "The customer cancelled this order.");
+        }
         return toResponse(o, true);
     }
 
@@ -246,6 +270,9 @@ public class OrderService {
         if (!from.canMoveTo(target) || target == OrderStatus.CANCELLED) {
             throw ApiException.conflict("INVALID_ORDER_TRANSITION", "Cannot move an order from " + from + " to " + target);
         }
+        if (o.getPaymentStatus() != PaymentStatus.PAID && o.getPaymentStatus() != PaymentStatus.AUTHORIZED) {
+            throw ApiException.conflict("PAYMENT_REQUIRED", "Payment must be completed before the cook can process this order");
+        }
         if (target == OrderStatus.READY_FOR_PICKUP && o.getOrderType() != OrderType.PICKUP
                 || target == OrderStatus.OUT_FOR_DELIVERY && o.getOrderType() == OrderType.PICKUP) {
             throw ApiException.conflict("INVALID_ORDER_TRANSITION", target + " does not apply to " + o.getOrderType() + " orders");
@@ -278,6 +305,12 @@ public class OrderService {
         DeliveryOrder d = delivery.book(o.getId(), o.getOrderNumber(), pickup, o.getDeliveryAddress(), o.getDeliveryFee());
         o.setDeliveryProvider(d.getProvider());
         o.setDeliveryOrderId(d.getProviderOrderId());
+    }
+
+    private void notifyCookOfOrder(Order order) {
+        notifications.notify(order.getCook().getUser().getId(), NotificationType.ORDER_PLACED,
+                "New order " + order.getOrderNumber(),
+                order.getCustomer().getName() + " ordered from you (" + order.getTotalAmount() + "). Confirm it to get started.");
     }
 
     // ---------------------------------------------------------------- admin
@@ -315,6 +348,10 @@ public class OrderService {
     }
 
     public OrderResponse toResponse(Order o, boolean includeContact) {
+        return toResponse(o, includeContact, null);
+    }
+
+    private OrderResponse toResponse(Order o, boolean includeContact, PaymentCheckout checkout) {
         var items = o.getItems().stream().map(i -> {
             Batch b = i.getBatch();
             return new OrderItemResponse(i.getDish().getId(), i.getDishNameSnapshot(), b.getId(), b.getName(),
@@ -333,6 +370,6 @@ public class OrderService {
                 o.getSubtotal(), o.getDeliveryFee(), o.getTotalAmount(), o.getOrderType(), o.getPaymentStatus(),
                 o.getOrderStatus(), o.getDeliveryAddress(), pickupAddress, o.getDeliveryProvider(), tracking,
                 o.getOrderStatus().canMoveTo(OrderStatus.CANCELLED), reviews.existsByOrderId(o.getId()),
-                o.getCreatedAt(), o.getUpdatedAt());
+                o.getCreatedAt(), o.getUpdatedAt(), checkout);
     }
 }

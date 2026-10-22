@@ -15,7 +15,8 @@ public record AppProperties(
         RateLimit rateLimit,
         Seed seed,
         AdminBootstrap adminBootstrap,
-        Auth auth) {
+        Auth auth,
+        Payment payment) {
 
     public record Jwt(String secret, int accessTokenMinutes, int refreshTokenDays) {}
 
@@ -32,4 +33,6 @@ public record AppProperties(
     public record AdminBootstrap(String email, String password) {}
 
     public record Auth(boolean exposeResetToken) {}
+
+    public record Payment(String provider, String razorpayKeyId, String razorpayKeySecret) {}
 }

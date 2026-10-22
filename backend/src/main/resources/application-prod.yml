@@ -5,6 +5,8 @@ spring:
       maximum-pool-size: 5
 
 gharse:
+  payment:
+    provider: ${PAYMENT_PROVIDER:razorpay}
   seed:
     enabled: false
 

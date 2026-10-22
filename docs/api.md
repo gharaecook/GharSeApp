@@ -35,6 +35,7 @@ Common codes: `VALIDATION_ERROR` 400, `UNAUTHORIZED` 401, `FORBIDDEN` 403, `NOT_
 ## Customer
 - Cart: `GET /cart`, `POST /cart/items {dishId,batchId,quantity}`, `PUT /cart/items/{id} {quantity}`, `DELETE /cart/items/{id}`, `DELETE /cart`
 - Orders: `POST /orders {orderType: PICKUP|COOK_DELIVERY|THIRD_PARTY_DELIVERY, deliveryAddress?}`, `GET /orders`, `GET /orders/{id}`, `POST /orders/{id}/cancel`
+- With `PAYMENT_PROVIDER=razorpay`, order creation creates a pending Razorpay order and returns `paymentCheckout` (`keyId`, `orderId`, `amount` in paise, `currency`). Complete Razorpay Checkout, then post `{razorpayOrderId, razorpayPaymentId, razorpaySignature}` to `POST /orders/{id}/payment/verify`. The server verifies the signature before marking the order paid. Configure `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` on the backend; never expose the secret to the frontend. Production defaults to Razorpay and requires both credentials; local development and tests default to the mock provider.
 - Review: `POST /orders/{id}/review {rating, tasteRating?, hygieneRating?, packagingRating?, reliabilityRating?, comment?}`
 - Favorites: `POST|DELETE /cooks/{id}/favorite`, `GET /favorites`
 - `GET /notifications`, `POST /notifications/{id}/read` (any logged-in user)

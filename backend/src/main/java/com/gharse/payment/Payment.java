@@ -28,6 +28,12 @@ public class Payment extends CreatedEntity {
     @Column(name = "provider_payment_id")
     private String providerPaymentId;
 
+    @Column(name = "provider_order_id", unique = true)
+    private String providerOrderId;
+
+    @Column(name = "provider_refund_id")
+    private String providerRefundId;
+
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 
