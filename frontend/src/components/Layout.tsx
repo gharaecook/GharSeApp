@@ -10,7 +10,7 @@ import type { Cart, NotificationItem } from '../lib/types'
 export function Logo({ className = '' }: { className?: string }) {
   return (
     <Link to="/" className={`flex items-center gap-2 text-2xl font-extrabold text-brand-600 ${className}`} aria-label="GharSe home">
-      <span aria-hidden className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500 text-lg text-white">घर</span>
+      <img src="/gharse-logo.png" alt="" aria-hidden="true" className="h-10 w-auto object-contain" />
       GharSe
     </Link>
   )
