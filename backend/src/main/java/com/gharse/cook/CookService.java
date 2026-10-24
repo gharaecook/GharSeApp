@@ -10,8 +10,10 @@ import com.gharse.cuisine.Cuisine;
 import com.gharse.cuisine.CuisineRepository;
 import com.gharse.kitchen.Kitchen;
 import com.gharse.kitchen.KitchenRepository;
+import com.gharse.order.OrderRepository;
 import com.gharse.user.User;
 import com.gharse.user.UserRepository;
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -42,12 +44,13 @@ public class CookService {
     private final FavoriteRepository favorites;
     private final CuisineRepository cuisines;
     private final UserRepository users;
+    private final OrderRepository orders;
     private final Clock clock;
     private final ZoneId zone;
 
     public CookService(CookRepository cooks, KitchenRepository kitchens, CookDocumentRepository documents,
                        BatchRepository batches, FavoriteRepository favorites, CuisineRepository cuisines,
-                       UserRepository users, Clock clock, ZoneId zone) {
+                       UserRepository users, OrderRepository orders, Clock clock, ZoneId zone) {
         this.cooks = cooks;
         this.kitchens = kitchens;
         this.documents = documents;
@@ -55,6 +58,7 @@ public class CookService {
         this.favorites = favorites;
         this.cuisines = cuisines;
         this.users = users;
+        this.orders = orders;
         this.clock = clock;
         this.zone = zone;
     }
@@ -74,6 +78,20 @@ public class CookService {
         var result = cooks.findAll(spec, PageRequest.of(page, size, sortFor(sort)));
         List<CookSummary> content = summaries(result.getContent(), null, null);
         return new PageResponse<>(content, result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages());
+    }
+
+    public List<CookSummary> topCooks() {
+        List<Cook> approved = cooks.findByApprovalStatus(ApprovalStatus.APPROVED);
+        Map<UUID, Long> completedOrders = completedOrderCounts(approved);
+        Comparator<Cook> ranking = Comparator
+                .<Cook>comparingLong(c -> completedOrders.getOrDefault(c.getId(), 0L))
+                .reversed()
+                .thenComparing(Comparator.comparingInt(Cook::getReviewCount).reversed())
+                .thenComparing(Comparator.comparing(Cook::getRating).reversed())
+                .thenComparing(Cook::getCreatedAt)
+                .thenComparing(Cook::getId);
+        List<Cook> top = approved.stream().sorted(ranking).limit(3).toList();
+        return summaries(top, null, null);
     }
 
     public CookDetail detail(UUID id, AuthUser viewer) {
@@ -97,6 +115,7 @@ public class CookService {
     private List<CookSummary> summaries(List<Cook> list, Double lat, Double lng) {
         if (list.isEmpty()) return List.of();
         Set<UUID> ids = list.stream().map(Cook::getId).collect(Collectors.toSet());
+        Map<UUID, Long> completedOrders = completedOrderCounts(list);
         LocalDate today = LocalDate.now(clock.withZone(zone));
         Set<UUID> availableToday = batches.findCookIdsWithBatchToday(ids, today, BatchStatus.OPEN, clock.instant());
         Map<UUID, Kitchen> kitchenByCook = kitchens.findByCookIdIn(ids).stream()
@@ -113,10 +132,18 @@ public class CookService {
             boolean verified = fssai.contains(c.getId()) || (k != null && k.getVerificationStatus() == ApprovalStatus.APPROVED);
             out.add(new CookSummary(c.getId(), c.getUser().getName(), c.getHeadline(), c.getLocality(), c.getCity(),
                     c.getProfilePhotoUrl(), c.getYearsOfCooking(), c.getRating(), c.getReviewCount(),
+                    completedOrders.getOrDefault(c.getId(), 0L),
                     c.getCuisines().stream().map(Cuisine::getName).sorted().toList(), splitDishes(c.getSignatureDishes()),
                     snippet(c.getBio()), availableToday.contains(c.getId()), distance, verified, c.getCreatedAt()));
         }
         return out;
+    }
+
+    private Map<UUID, Long> completedOrderCounts(List<Cook> list) {
+        if (list.isEmpty()) return Map.of();
+        Set<UUID> ids = list.stream().map(Cook::getId).collect(Collectors.toSet());
+        return orders.completedOrderCounts(ids).stream()
+                .collect(Collectors.toMap(OrderRepository.CookOrderCount::getCookId, OrderRepository.CookOrderCount::getOrderCount));
     }
 
     private boolean fssaiApproved(UUID cookId) {

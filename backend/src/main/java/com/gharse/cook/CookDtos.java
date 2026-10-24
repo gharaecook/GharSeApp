@@ -21,7 +21,7 @@ public final class CookDtos {
 
     /** Card shown in discovery lists. Contains no private data (no phone, no full address). */
     public record CookSummary(UUID id, String name, String headline, String locality, String city, String profilePhotoUrl,
-                              Integer yearsOfCooking, BigDecimal rating, int reviewCount, List<String> cuisines,
+                              Integer yearsOfCooking, BigDecimal rating, int reviewCount, long completedOrderCount, List<String> cuisines,
                               List<String> signatureDishes, String storySnippet, boolean availableToday,
                               Double distanceKm, boolean verified, Instant joinedAt) {}
 

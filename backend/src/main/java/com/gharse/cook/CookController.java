@@ -59,6 +59,11 @@ public class CookController {
                 sort, lat, lng, Math.max(page, 0), safeSize);
     }
 
+    @GetMapping("/cooks/top")
+    public List<CookSummary> topCooks() {
+        return service.topCooks();
+    }
+
     @GetMapping("/cooks/{id}")
     public CookDetail detail(@PathVariable UUID id) {
         return service.detail(id, AuthUser.currentOrNull());

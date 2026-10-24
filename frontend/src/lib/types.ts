@@ -16,7 +16,8 @@ export interface Page<T> { content: T[]; page: number; size: number; totalElemen
 
 export interface CookSummary {
   id: string; name: string; headline?: string; locality?: string; city?: string; profilePhotoUrl?: string
-  yearsOfCooking?: number; rating: number; reviewCount: number; cuisines: string[]; signatureDishes: string[]
+  yearsOfCooking?: number; rating: number; reviewCount: number; completedOrderCount: number
+  cuisines: string[]; signatureDishes: string[]
   storySnippet?: string; availableToday: boolean; distanceKm?: number; verified: boolean; joinedAt: string
 }
 export interface CookDetail {

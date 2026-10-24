@@ -4,9 +4,14 @@ import { categoryEmoji, formatDate, rupees, statusLabel, timeWindow, trackerStep
 import { Avatar, Badge, Card, Rating } from './ui'
 
 /** The cook is the hero: photo, name, place, story, speciality, rating, availability. */
-export function CookCard({ cook }: { cook: CookSummary }) {
+export function CookCard({ cook, awardRank }: { cook: CookSummary; awardRank?: number }) {
   return (
-    <Card className="flex h-full flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-lg">
+    <Card className="relative flex h-full flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-lg">
+      {awardRank && <div role="img" aria-label={`Top ${awardRank} cook by completed orders and reviews`}
+        className={`absolute right-3 top-3 z-10 flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-extrabold shadow-md ${awardRank === 1 ? 'bg-amber-300 text-amber-950' : 'bg-white/95 text-brand-700'}`}>
+        <span className="text-2xl leading-none" aria-hidden>{awardRank === 1 ? '👑' : '⭐'}</span>
+        <span>#{awardRank}</span>
+      </div>}
       <div className="flex items-center gap-4 bg-gradient-to-br from-brand-50 to-cream-200 p-4">
         <Avatar name={cook.name} src={cook.profilePhotoUrl} size={72} />
         <div className="min-w-0">

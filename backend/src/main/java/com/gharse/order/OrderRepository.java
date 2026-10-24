@@ -15,6 +15,11 @@ import org.springframework.data.repository.query.Param;
 
 public interface OrderRepository extends JpaRepository<Order, UUID> {
 
+    interface CookOrderCount {
+        UUID getCookId();
+        long getOrderCount();
+    }
+
     Page<Order> findByCustomerId(UUID customerId, Pageable pageable);
 
     Page<Order> findByCookId(UUID cookId, Pageable pageable);
@@ -44,6 +49,11 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     long countByCookIdAndOrderStatus(UUID cookId, OrderStatus status);
 
     long countByCookIdAndOrderStatusIn(UUID cookId, Collection<OrderStatus> statuses);
+
+    @Query("select o.cook.id as cookId, count(o.id) as orderCount from Order o "
+            + "where o.cook.id in :cookIds and o.orderStatus = com.gharse.order.OrderStatus.COMPLETED "
+            + "group by o.cook.id")
+    List<CookOrderCount> completedOrderCounts(@Param("cookIds") Collection<UUID> cookIds);
 
     @Query("select count(distinct o.id) from Order o join o.items i where o.cook.id = :cookId "
             + "and i.batch.availableDate = :date and o.orderStatus <> com.gharse.order.OrderStatus.CANCELLED")

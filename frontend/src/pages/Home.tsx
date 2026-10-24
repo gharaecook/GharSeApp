@@ -36,6 +36,17 @@ function CookRow({ params, empty }: { params: Record<string, string | number | b
   return <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{data.content.map((c) => <CookCard key={c.id} cook={c} />)}</div>
 }
 
+function TopCookRow() {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['cooks', 'top'],
+    queryFn: () => api.get<CookSummary[]>('/cooks/top'),
+  })
+  if (isLoading) return <LoadingState />
+  if (error) return <ErrorState error={error} onRetry={refetch} />
+  if (!data?.length) return <EmptyState title="No top cooks yet" />
+  return <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{data.map((cook, index) => <CookCard key={cook.id} cook={cook} awardRank={index + 1} />)}</div>
+}
+
 export default function Home() {
   const [q, setQ] = useState('')
   const navigate = useNavigate()
@@ -63,6 +74,9 @@ export default function Home() {
         </div>
       </div>
 
+      <Section title="Top Home Cooks" subtitle="Celebrated for completed orders and customer reviews" to="/cooks">
+        <TopCookRow />
+      </Section>
       <Section title={locality ? `Home Cooks near ${locality}` : 'Home Cooks Near You'} subtitle="Meet the people behind the food" to="/cooks">
         <CookRow params={{ locality: locality || undefined, sort: 'rating' }} empty={`No cooks in ${locality || 'your area'} yet`} />
       </Section>

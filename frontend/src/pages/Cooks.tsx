@@ -31,6 +31,11 @@ export default function Cooks() {
     queryFn: () => api.get<Page<CookSummary>>(`/cooks${qs(query)}`),
     placeholderData: (prev) => prev,
   })
+  const topCooks = useQuery({
+    queryKey: ['cooks', 'top'],
+    queryFn: () => api.get<CookSummary[]>('/cooks/top'),
+  })
+  const topRanks = new Map((topCooks.data ?? []).map((cook, index) => [cook.id, index + 1]))
 
   const locateMe = () => {
     setGeoError('')
@@ -44,6 +49,17 @@ export default function Cooks() {
   return (
     <div className="container-page py-8">
       <PageTitle title="Home Cooks" subtitle={data ? `${data.totalElements} cook${data.totalElements === 1 ? '' : 's'} found` : undefined} />
+      {topCooks.isLoading ? <LoadingState label="Finding top cooks…" /> : topCooks.error ? <ErrorState error={topCooks.error} onRetry={topCooks.refetch} /> : !!topCooks.data?.length && (
+        <section className="mb-8" aria-labelledby="top-cooks-title">
+          <div className="mb-4">
+            <h2 id="top-cooks-title" className="text-2xl">Top Home Cooks</h2>
+            <p className="text-sm text-ink-500">Ranked by completed orders, with reviews as the tie-breaker.</p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {topCooks.data.map((cook, index) => <CookCard key={cook.id} cook={cook} awardRank={index + 1} />)}
+          </div>
+        </section>
+      )}
       <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
         <aside className="card h-fit space-y-4 p-4" aria-label="Filters">
           <Input label="Search" placeholder="Cook, dish, cuisine…" defaultValue={get('q')} key={get('q')}
@@ -78,7 +94,7 @@ export default function Cooks() {
             <EmptyState title="No cooks match yet" message="Try removing a filter or searching for something else." action={<Button variant="secondary" onClick={() => setParams({})}>Clear filters</Button>} />
           ) : (
             <>
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{data.content.map((c) => <CookCard key={c.id} cook={c} />)}</div>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{data.content.map((c) => <CookCard key={c.id} cook={c} awardRank={topRanks.get(c.id)} />)}</div>
               {data.totalPages > 1 && (
                 <div className="mt-6 flex items-center justify-center gap-3">
                   <Button variant="secondary" disabled={page === 0} onClick={() => set('page', String(page - 1))}>← Previous</Button>

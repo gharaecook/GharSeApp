@@ -11,6 +11,8 @@ public interface CookRepository extends JpaRepository<Cook, UUID>, JpaSpecificat
 
     Optional<Cook> findByUserId(UUID userId);
 
+    List<Cook> findByApprovalStatus(ApprovalStatus status);
+
     Page<Cook> findByApprovalStatus(ApprovalStatus status, Pageable pageable);
 
     long countByApprovalStatus(ApprovalStatus status);
