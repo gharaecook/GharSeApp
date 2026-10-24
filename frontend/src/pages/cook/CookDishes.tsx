@@ -9,14 +9,22 @@ import { categoryLabel } from '../../lib/format'
 import type { Cuisine, Dish, DishCategory } from '../../lib/types'
 import { CookShell } from '../../components/SectionNav'
 import { DishCard, DishVisual } from '../../components/cards'
-import { Badge, Button, Card, EmptyState, ErrorState, FormError, Input, LoadingState, PageTitle, Select, Textarea } from '../../components/ui'
+import { Badge, Button, Card, EmptyState, ErrorState, FormError, Input, LoadingState, Modal, PageTitle, Select, Textarea } from '../../components/ui'
 
 export function CookDishes() {
   const qc = useQueryClient()
+  const [dishToDelete, setDishToDelete] = useState<Dish | null>(null)
   const dishes = useQuery({ queryKey: ['cook', 'dishes'], queryFn: () => api.get<Dish[]>('/cook/dishes') })
-  const toggle = useMutation({
-    mutationFn: (d: Dish) => d.active ? api.del(`/cook/dishes/${d.id}`) : api.put(`/cook/dishes/${d.id}`, { ...d, cuisineId: d.cuisineId, active: true }),
+  const setActive = useMutation({
+    mutationFn: (d: Dish) => api.put(`/cook/dishes/${d.id}`, { ...d, cuisineId: d.cuisineId, active: true }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['cook', 'dishes'] }),
+  })
+  const removeDish = useMutation({
+    mutationFn: (dish: Dish) => api.del(`/cook/dishes/${dish.id}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['cook', 'dishes'] })
+      setDishToDelete(null)
+    },
   })
   return (
     <CookShell>
@@ -31,13 +39,23 @@ export function CookDishes() {
                 <div className="flex items-center gap-2">
                   {!d.active && <Badge>Inactive</Badge>}
                   <Link to={`/cook/dishes/${d.id}`} className="text-sm font-bold text-brand-600">Edit</Link>
-                  <button className="text-sm font-bold text-ink-500 hover:text-red-600" onClick={() => toggle.mutate(d)}>{d.active ? 'Deactivate' : 'Activate'}</button>
+                  {d.active
+                    ? <button className="text-sm font-bold text-red-600 hover:text-red-700" onClick={() => setDishToDelete(d)}>Delete</button>
+                    : <button className="text-sm font-bold text-brand-600 hover:text-brand-700" onClick={() => setActive.mutate(d)}>Reactivate</button>}
                 </div>} />
             </div>
           ))}
         </div>
       )}
-      <div className="mt-3"><FormError error={toggle.error} /></div>
+      <div className="mt-3"><FormError error={setActive.error} /></div>
+      <Modal open={!!dishToDelete} title="Delete this dish?" onClose={() => setDishToDelete(null)}>
+        <p className="text-sm text-ink-700">“{dishToDelete?.name}” will be removed from your public menu. Past orders and batch history will be preserved.</p>
+        <div className="mt-3"><FormError error={removeDish.error} /></div>
+        <div className="mt-5 flex justify-end gap-2">
+          <Button variant="ghost" onClick={() => setDishToDelete(null)}>Cancel</Button>
+          <Button variant="danger" loading={removeDish.isPending} onClick={() => dishToDelete && removeDish.mutate(dishToDelete)}>Delete dish</Button>
+        </div>
+      </Modal>
     </CookShell>
   )
 }

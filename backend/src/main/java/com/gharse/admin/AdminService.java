@@ -23,6 +23,7 @@ import com.gharse.user.User;
 import com.gharse.user.UserRepository;
 import com.gharse.user.UserResponse;
 import com.gharse.user.UserRole;
+import com.gharse.user.UserStatus;
 import java.math.BigDecimal;
 import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
@@ -112,5 +113,17 @@ public class AdminService {
         var pr = PageRequest.of(page, size, Sort.by(Sort.Order.desc("createdAt")));
         var result = role == null ? users.findAll(pr) : users.findByRole(role, pr);
         return PageResponse.of(result, (User u) -> UserResponse.of(u, null));
+    }
+
+    public UserResponse setUserStatus(UUID adminUserId, UUID userId, UserStatus status) {
+        User user = users.findById(userId).orElseThrow(() -> ApiException.notFound("User"));
+        if (user.getId().equals(adminUserId) && status == UserStatus.SUSPENDED) {
+            throw ApiException.forbidden("You cannot suspend your own account");
+        }
+        if (user.getStatus() != status) {
+            user.setStatus(status);
+            user.setCredentialVersion(user.getCredentialVersion() + 1);
+        }
+        return UserResponse.of(user, null);
     }
 }

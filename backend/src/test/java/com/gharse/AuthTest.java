@@ -73,6 +73,25 @@ class AuthTest extends IntegrationTestBase {
     }
 
     @Test
+    void adminCanSuspendAndReactivateAUserWithoutDeletingTheirAccount() {
+        Acct customer = registerCustomer();
+        Acct admin = admin();
+        JsonNode tokens = post("/api/v1/auth/login", null, Map.of("email", customer.email(), "password", PASSWORD));
+
+        JsonNode suspended = post("/api/v1/admin/users/" + customer.userId() + "/suspend", admin.token(), null);
+        assertThat(suspended.path("status").asText()).isEqualTo("SUSPENDED");
+        assertThat(users.findById(customer.userId())).isPresent();
+        post("/api/v1/auth/login", null, Map.of("email", customer.email(), "password", PASSWORD), 403);
+        post("/api/v1/auth/refresh", null, Map.of("refreshToken", tokens.path("refreshToken").asText()), 401);
+        post("/api/v1/admin/users/" + admin.userId() + "/suspend", admin.token(), null, 403);
+
+        JsonNode reactivated = post("/api/v1/admin/users/" + customer.userId() + "/reactivate", admin.token(), null);
+        assertThat(reactivated.path("status").asText()).isEqualTo("ACTIVE");
+        assertThat(post("/api/v1/auth/login", null, Map.of("email", customer.email(), "password", PASSWORD))
+                .path("accessToken").asText()).isNotBlank();
+    }
+
+    @Test
     void refreshTokenIssuesANewPairButAnAccessTokenCannotBeUsedToRefresh() {
         Acct a = registerCustomer();
         JsonNode login = post("/api/v1/auth/login", null, Map.of("email", a.email(), "password", PASSWORD));

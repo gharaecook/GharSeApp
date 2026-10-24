@@ -12,6 +12,7 @@ import com.gharse.order.OrderService;
 import com.gharse.order.OrderStatus;
 import com.gharse.user.UserResponse;
 import com.gharse.user.UserRole;
+import com.gharse.user.UserStatus;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -79,5 +80,15 @@ public class AdminController {
                                             @RequestParam(defaultValue = "0") int page,
                                             @RequestParam(defaultValue = "20") int size) {
         return service.users(role, Math.max(page, 0), Math.min(Math.max(size, 1), 100));
+    }
+
+    @PostMapping("/users/{id}/suspend")
+    public UserResponse suspendUser(@PathVariable UUID id) {
+        return service.setUserStatus(AuthUser.current().id(), id, UserStatus.SUSPENDED);
+    }
+
+    @PostMapping("/users/{id}/reactivate")
+    public UserResponse reactivateUser(@PathVariable UUID id) {
+        return service.setUserStatus(AuthUser.current().id(), id, UserStatus.ACTIVE);
     }
 }
