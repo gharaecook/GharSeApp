@@ -32,10 +32,12 @@ export default function CookProfileEdit() {
   const [photo, setPhoto] = useState<string | null>(null)
   const [kitchenPhotos, setKitchenPhotos] = useState<string[] | null>(null)
   const [uploadError, setUploadError] = useState<unknown>(null)
+  const [locationError, setLocationError] = useState('')
+  const [locating, setLocating] = useState(false)
   const [fssai, setFssai] = useState({ number: '', url: '' })
 
   const p = profile.data
-  const { register, handleSubmit, formState: { errors } } = useForm<Form>({
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<Form>({
     resolver: zodResolver(schema) as never,
     values: p && {
       name: p.name, phone: p.phone, address: p.address ?? '', locality: p.locality ?? '', yearsOfCooking: p.yearsOfCooking ?? 0,
@@ -62,6 +64,29 @@ export default function CookProfileEdit() {
     if (!file) return
     setUploadError(null)
     try { done(await api.upload(file, folder)) } catch (e) { setUploadError(e) }
+  }
+
+  const useCurrentLocation = () => {
+    setLocationError('')
+    if (!navigator.geolocation) {
+      setLocationError('Location is not supported in this browser. Enter the coordinates manually.')
+      return
+    }
+    setLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        setValue('latitude', coords.latitude, { shouldDirty: true, shouldValidate: true })
+        setValue('longitude', coords.longitude, { shouldDirty: true, shouldValidate: true })
+        setLocating(false)
+      },
+      (error) => {
+        setLocationError(error.code === error.PERMISSION_DENIED
+          ? 'Location permission was denied. Allow location access in your browser or enter coordinates manually.'
+          : 'Could not get your location. Try again or enter the coordinates manually.')
+        setLocating(false)
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+    )
   }
 
   if (profile.isLoading) return <CookShell><LoadingState /></CookShell>
@@ -111,9 +136,14 @@ export default function CookProfileEdit() {
           <h2 className="text-lg">My kitchen</h2>
           <Textarea label="Kitchen address" rows={2} hint="Only shared with customers who choose pickup, after you confirm." {...register('kitchenAddress')} />
           <Textarea label="About the kitchen" rows={3} {...register('kitchenDescription')} />
+          <div className="space-y-2">
+            <p className="text-sm text-ink-500">Add your kitchen location so customers can see how far away you are. Your exact coordinates are not shown publicly.</p>
+            <Button type="button" variant="secondary" loading={locating} onClick={useCurrentLocation}>Use my current location</Button>
+            {locationError && <p role="alert" className="text-sm text-red-600">{locationError}</p>}
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Input label="Latitude (optional)" inputMode="decimal" hint="Enables distance sorting" {...register('latitude')} error={errors.latitude?.message} />
-            <Input label="Longitude (optional)" inputMode="decimal" {...register('longitude')} error={errors.longitude?.message} />
+            <Input label="Latitude" type="number" step="any" inputMode="decimal" hint="Filled from your location or enter manually" {...register('latitude')} error={errors.latitude?.message} />
+            <Input label="Longitude" type="number" step="any" inputMode="decimal" hint="Filled from your location or enter manually" {...register('longitude')} error={errors.longitude?.message} />
           </div>
           <div>
             <p className="label">Kitchen photos</p>
