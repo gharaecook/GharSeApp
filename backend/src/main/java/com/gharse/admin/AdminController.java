@@ -14,6 +14,7 @@ import com.gharse.user.UserResponse;
 import com.gharse.user.UserRole;
 import com.gharse.user.UserStatus;
 import jakarta.validation.Valid;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -56,6 +57,11 @@ public class AdminController {
     @GetMapping("/cooks/{id}")
     public AdminCookDetail cook(@PathVariable UUID id) {
         return service.cookDetail(id);
+    }
+
+    @GetMapping("/cooks/{cookId}/documents/{documentId}/url")
+    public Map<String, String> cookDocumentUrl(@PathVariable UUID cookId, @PathVariable UUID documentId) {
+        return Map.of("url", service.documentUrl(cookId, documentId));
     }
 
     @PostMapping("/cooks/{id}/approve")

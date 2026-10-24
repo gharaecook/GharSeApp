@@ -69,7 +69,8 @@ export interface Kitchen {
   verificationStatus: ApprovalStatus; photos: string[]
 }
 export interface CookDocument {
-  id: string; documentType: string; documentNumber?: string; documentUrl?: string; status: ApprovalStatus; expiryDate?: string
+  id: string; documentType: string; documentNumber?: string; documentUrl?: string; hasFile: boolean
+  status: ApprovalStatus; expiryDate?: string
 }
 export interface CookProfile {
   id: string; userId: string; name: string; email: string; phone: string; address?: string; headline?: string

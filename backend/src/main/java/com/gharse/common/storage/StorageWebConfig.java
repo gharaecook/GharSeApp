@@ -1,11 +1,13 @@
 package com.gharse.common.storage;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /** Serves locally stored uploads (local dev / single node). */
 @Configuration
+@ConditionalOnProperty(prefix = "gharse.storage", name = "type", havingValue = "local", matchIfMissing = true)
 public class StorageWebConfig implements WebMvcConfigurer {
 
     private final LocalStorageService local;

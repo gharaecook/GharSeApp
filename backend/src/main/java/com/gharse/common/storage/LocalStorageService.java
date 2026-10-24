@@ -7,10 +7,13 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.util.UUID;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 @Service
+@ConditionalOnProperty(prefix = "gharse.storage", name = "type", havingValue = "local", matchIfMissing = true)
 public class LocalStorageService implements StorageService {
 
     private final Path root;
@@ -26,7 +29,7 @@ public class LocalStorageService implements StorageService {
     }
 
     @Override
-    public String upload(String folder, String extension, String contentType, InputStream content, long length) {
+    public String upload(String folder, String extension, String contentType, InputStream content, long length) throws IOException {
         String key = folder + "/" + UUID.randomUUID() + "." + extension;
         Path target = root.resolve(key).normalize();
         if (!target.startsWith(root)) throw new IllegalArgumentException("Invalid storage key");
@@ -53,5 +56,10 @@ public class LocalStorageService implements StorageService {
     @Override
     public String getUrl(String key) {
         return baseUrl + "/" + key;
+    }
+
+    @Override
+    public String getPrivateUrl(String key, Duration expiry) {
+        return getUrl(key);
     }
 }

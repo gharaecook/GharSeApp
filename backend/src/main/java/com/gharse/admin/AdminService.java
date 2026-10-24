@@ -6,6 +6,7 @@ import com.gharse.admin.AdminDtos.DashboardResponse;
 import com.gharse.common.ApiException;
 import com.gharse.common.AppProperties;
 import com.gharse.common.PageResponse;
+import com.gharse.common.storage.StorageService;
 import com.gharse.cook.ApprovalStatus;
 import com.gharse.cook.Cook;
 import com.gharse.cook.CookDocumentRepository;
@@ -25,6 +26,7 @@ import com.gharse.user.UserResponse;
 import com.gharse.user.UserRole;
 import com.gharse.user.UserStatus;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -45,10 +47,11 @@ public class AdminService {
     private final CookService cookService;
     private final NotificationService notifications;
     private final AppProperties props;
+    private final StorageService storage;
 
     public AdminService(UserRepository users, CookRepository cooks, KitchenRepository kitchens, CookDocumentRepository documents,
                         DishRepository dishes, OrderRepository orders, CookService cookService,
-                        NotificationService notifications, AppProperties props) {
+                        NotificationService notifications, AppProperties props, StorageService storage) {
         this.users = users;
         this.cooks = cooks;
         this.kitchens = kitchens;
@@ -58,6 +61,7 @@ public class AdminService {
         this.cookService = cookService;
         this.notifications = notifications;
         this.props = props;
+        this.storage = storage;
     }
 
     @Transactional(readOnly = true)
@@ -125,5 +129,15 @@ public class AdminService {
             user.setCredentialVersion(user.getCredentialVersion() + 1);
         }
         return UserResponse.of(user, null);
+    }
+
+    @Transactional(readOnly = true)
+    public String documentUrl(UUID cookId, UUID documentId) {
+        var document = documents.findById(documentId)
+                .filter(d -> d.getCook().getId().equals(cookId))
+                .orElseThrow(() -> ApiException.notFound("Cook document"));
+        String key = document.getDocumentUrl();
+        if (key == null || key.isBlank()) throw ApiException.notFound("Cook document file");
+        return storage.getPrivateUrl(key, Duration.ofMinutes(5));
     }
 }

@@ -20,7 +20,8 @@ public record AppProperties(
 
     public record Jwt(String secret, int accessTokenMinutes, int refreshTokenDays) {}
 
-    public record Storage(String type, String localDir, String publicBaseUrl, long maxFileBytes) {}
+    public record Storage(String type, String localDir, String publicBaseUrl, String supabaseUrl,
+                          String supabaseServiceKey, String publicBucket, String privateBucket, long maxFileBytes) {}
 
     public record Cook(boolean fssaiRequired) {}
 

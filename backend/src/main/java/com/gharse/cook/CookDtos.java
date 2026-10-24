@@ -34,10 +34,12 @@ public final class CookDtos {
                                   ApprovalStatus verificationStatus, List<String> photos) {}
 
     public record DocumentResponse(UUID id, DocumentType documentType, String documentNumber, String documentUrl,
+                                   boolean hasFile,
                                    ApprovalStatus status, LocalDate expiryDate, Instant createdAt) {
 
         public static DocumentResponse of(CookDocument d) {
-            return new DocumentResponse(d.getId(), d.getDocumentType(), d.getDocumentNumber(), d.getDocumentUrl(),
+            return new DocumentResponse(d.getId(), d.getDocumentType(), d.getDocumentNumber(), null,
+                    d.getDocumentUrl() != null && !d.getDocumentUrl().isBlank(),
                     d.getStatus(), d.getExpiryDate(), d.getCreatedAt());
         }
     }

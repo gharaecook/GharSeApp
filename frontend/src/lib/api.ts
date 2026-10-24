@@ -103,7 +103,9 @@ export const api = {
   upload: async (file: File, folder: 'profiles' | 'dishes' | 'kitchens' | 'documents') => {
     const fd = new FormData()
     fd.append('file', file)
-    const r = await request<{ url: string }>('POST', `/files?folder=${folder}`, fd)
+    const r = await request<{ key: string; url?: string }>('POST', `/files?folder=${folder}`, fd)
+    if (folder === 'documents') return r.key
+    if (!r.url) throw new ApiError(500, 'MISSING_UPLOAD_URL', 'Storage did not return a public image URL')
     return r.url
   },
 }

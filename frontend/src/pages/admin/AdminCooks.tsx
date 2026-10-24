@@ -47,10 +47,15 @@ export function AdminCookDetail() {
   const qc = useQueryClient()
   const [rejecting, setRejecting] = useState(false)
   const [reason, setReason] = useState('')
+  const [documentUrls, setDocumentUrls] = useState<Record<string, string>>({})
   const q = useQuery({ queryKey: ['admin', 'cook', id], queryFn: () => api.get<Detail>(`/admin/cooks/${id}`) })
   const done = () => { qc.invalidateQueries({ queryKey: ['admin'] }); setRejecting(false) }
   const approve = useMutation({ mutationFn: () => api.post(`/admin/cooks/${id}/approve`), onSuccess: done })
   const reject = useMutation({ mutationFn: () => api.post(`/admin/cooks/${id}/reject`, { reason }), onSuccess: done })
+  const documentUrl = useMutation({
+    mutationFn: (documentId: string) => api.get<{ url: string }>(`/admin/cooks/${id}/documents/${documentId}/url`),
+    onSuccess: (result, documentId) => setDocumentUrls((current) => ({ ...current, [documentId]: result.url })),
+  })
 
   if (q.isLoading) return <AdminShell><LoadingState /></AdminShell>
   if (q.error) return <AdminShell><ErrorState error={q.error} onRetry={q.refetch} /></AdminShell>
@@ -78,8 +83,11 @@ export function AdminCookDetail() {
         <Card className="space-y-2 p-5">
           <h2 className="text-lg">Documents</h2>
           {!p.documents.length ? <p className="text-sm text-ink-500">No documents uploaded (FSSAI optional).</p> : p.documents.map((d) => (
-            <p key={d.id} className="text-sm"><b>{d.documentType}</b> {d.documentNumber} <Badge tone={tone(d.status)}>{d.status}</Badge> {d.documentUrl && <a className="font-bold text-brand-600" href={d.documentUrl} target="_blank" rel="noreferrer">View file</a>}</p>
+            <p key={d.id} className="text-sm"><b>{d.documentType}</b> {d.documentNumber} <Badge tone={tone(d.status)}>{d.status}</Badge> {d.hasFile && (documentUrls[d.id]
+              ? <a className="font-bold text-brand-600" href={documentUrls[d.id]} target="_blank" rel="noreferrer">Open file</a>
+              : <Button variant="ghost" className="px-2 py-1" loading={documentUrl.isPending} onClick={() => documentUrl.mutate(d.id)}>Get secure file link</Button>)}</p>
           ))}
+          <FormError error={documentUrl.error} />
         </Card>
         <Card className="space-y-2 p-5">
           <h2 className="text-lg">Dishes ({dishes.length})</h2>

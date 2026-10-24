@@ -49,13 +49,13 @@ gharse:
     access-token-minutes: 30
     refresh-token-days: 14
   storage:
-    type: local
+    type: ${STORAGE_TYPE:local}
     local-dir: ${STORAGE_LOCAL_DIR:./uploads}
     public-base-url: ${STORAGE_PUBLIC_BASE_URL:http://localhost:8080/uploads}
-    endpoint: ${STORAGE_ENDPOINT:}
-    access-key: ${STORAGE_ACCESS_KEY:}
-    secret-key: ${STORAGE_SECRET_KEY:}
-    bucket: ${STORAGE_BUCKET:}
+    supabase-url: ${SUPABASE_URL:}
+    supabase-service-key: ${SUPABASE_SERVICE_ROLE_KEY:}
+    public-bucket: ${SUPABASE_PUBLIC_BUCKET:gharse-media}
+    private-bucket: ${SUPABASE_PRIVATE_BUCKET:gharse-documents}
     max-file-bytes: 5242880
   cook:
     fssai-required: false

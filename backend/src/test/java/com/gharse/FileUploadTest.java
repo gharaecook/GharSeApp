@@ -25,4 +25,17 @@ class FileUploadTest extends IntegrationTestBase {
         assertThat(upload(c.token(), "fake.png", "image/png", "not an image at all".getBytes())).isEqualTo(400);
         assertThat(upload(c.token(), "empty.png", "image/png", new byte[0])).isEqualTo(400);
     }
+
+    @Test
+    void documentsReturnPrivateKeysInsteadOfPublicUrls() throws Exception {
+        Acct c = registerCustomer();
+        byte[] pdf = "%PDF-1.7 test".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        var req = multipart("/api/v1/files").file(new MockMultipartFile("file", "certificate.pdf", "application/pdf", pdf))
+                .param("folder", "documents").header("Authorization", "Bearer " + c.token());
+        var response = mvc.perform(req).andExpect(status().isOk()).andReturn().getResponse();
+        var body = json.readTree(response.getContentAsString());
+
+        assertThat(body.path("key").asText()).startsWith("documents/");
+        assertThat(body.has("url")).isFalse();
+    }
 }

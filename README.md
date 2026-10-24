@@ -69,10 +69,21 @@ cd frontend && npm run lint && npm test && npm run build
 | `JWT_SECRET` | HS256 secret, **≥ 32 chars, required outside local/test** | local-only dev value |
 | `FRONTEND_URL` | Allowed CORS origin(s), comma separated | `http://localhost:5173` |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Creates the first admin at startup if set (password ≥ 8 chars) | unset |
-| `STORAGE_*` | Reserved for the S3-compatible storage implementation (see docs/architecture.md) | unset |
+| `STORAGE_TYPE` | `local` for development or `supabase` for Supabase Storage | `local` |
+| `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | Backend-only Supabase project URL and service-role secret (required with Supabase storage) | unset |
+| `SUPABASE_PUBLIC_BUCKET` / `SUPABASE_PRIVATE_BUCKET` | Public image bucket and private document bucket names | `gharse-media` / `gharse-documents` |
 | `VITE_API_URL` (frontend) | Backend base URL | `http://localhost:8080` |
 
 Profiles: `local` (default), `test`, `prod`. Secrets are never committed; see `.gitignore`.
+
+### Supabase Storage setup
+
+1. In Supabase Storage, create a `gharse-media` bucket and make it public for profile, dish, and kitchen images.
+2. Create a `gharse-documents` bucket and leave it private for cook certificates.
+3. Set `STORAGE_TYPE=supabase`, `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` in the backend environment.
+   The service-role key is backend-only; do not add it to Vite/frontend variables or commit it.
+4. For Render, the blueprint configures the bucket names and asks for the project URL and service key as secrets.
+   After saving them, redeploy the backend. For local development, leave `STORAGE_TYPE=local`.
 
 ## Repository layout
 
@@ -93,7 +104,8 @@ rate limiting) are interfaces so they can be added later. See [docs/future-roadm
 
 - Payment and courier delivery are **mocks** (`MockPaymentProvider`, `MockDeliveryProvider`).
 - Password reset tokens are shown only in local/test for manual testing; production email delivery is not implemented.
-- File storage is **local disk** only. Render's disk is ephemeral, so an S3-compatible `StorageService` implementation
-  is required before real production use (the interface and env vars are in place).
+- Local disk storage is available for development; configure Supabase Storage for persistent deployed uploads.
+  Public images use the configured public bucket, while cook documents use the private bucket and admin-only
+  five-minute signed links.
 - Refresh tokens are stateless JWTs (no server-side revocation list yet).
 - Rate limiting is in-memory (single instance).

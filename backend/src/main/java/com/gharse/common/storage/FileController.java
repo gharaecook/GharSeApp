@@ -17,6 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/v1/files")
 public class FileController {
 
+    public record UploadResponse(String key, String url) {}
+
     private static final Map<String, String> TYPES = Map.of(
             "image/jpeg", "jpg", "image/png", "png", "image/webp", "webp", "application/pdf", "pdf");
     private static final Set<String> FOLDERS = Set.of("profiles", "dishes", "kitchens", "documents");
@@ -29,10 +31,10 @@ public class FileController {
         this.maxBytes = props.storage().maxFileBytes();
     }
 
-    /** Upload an image/PDF. Returns the public URL to store on a profile, dish, kitchen or document. */
+    /** Upload media and return a public image URL or a private document key. */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Map<String, String> upload(@RequestParam("file") MultipartFile file,
-                                      @RequestParam(defaultValue = "dishes") String folder) throws IOException {
+    public UploadResponse upload(@RequestParam("file") MultipartFile file,
+                                 @RequestParam(defaultValue = "dishes") String folder) throws IOException {
         if (file.isEmpty()) throw ApiException.badRequest("FILE_EMPTY", "File is empty");
         if (file.getSize() > maxBytes) throw ApiException.badRequest("FILE_TOO_LARGE", "File exceeds the maximum size");
         String type = file.getContentType() == null ? "" : file.getContentType().toLowerCase(Locale.ROOT);
@@ -48,7 +50,7 @@ public class FileController {
         try (var in = file.getInputStream()) {
             key = storage.upload(folder, ext, type, in, file.getSize());
         }
-        return Map.of("key", key, "url", storage.getUrl(key));
+        return new UploadResponse(key, folder.equals("documents") ? null : storage.getUrl(key));
     }
 
     private static boolean matchesMagic(String ext, byte[] h) {
