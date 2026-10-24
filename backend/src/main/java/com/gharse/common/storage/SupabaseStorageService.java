@@ -10,8 +10,8 @@ import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
-import org.springframework.util.UriUtils;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.util.UriUtils;
 
 @Service
 @ConditionalOnProperty(prefix = "gharse.storage", name = "type", havingValue = "supabase")
