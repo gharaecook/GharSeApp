@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -7,6 +7,9 @@ import { api } from '../../lib/api'
 import type { CookProfile, Cuisine } from '../../lib/types'
 import { CookShell } from '../../components/SectionNav'
 import { Avatar, Badge, Button, Card, ErrorState, FormError, Input, LoadingState, PageTitle, Textarea } from '../../components/ui'
+
+const KitchenLocationPicker = lazy(() => import('../../components/KitchenLocationPicker')
+  .then(({ KitchenLocationPicker: component }) => ({ default: component })))
 
 const schema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(120),
@@ -37,7 +40,7 @@ export default function CookProfileEdit() {
   const [fssai, setFssai] = useState({ number: '', url: '' })
 
   const p = profile.data
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<Form>({
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<Form>({
     resolver: zodResolver(schema) as never,
     values: p && {
       name: p.name, phone: p.phone, address: p.address ?? '', locality: p.locality ?? '', yearsOfCooking: p.yearsOfCooking ?? 0,
@@ -46,6 +49,8 @@ export default function CookProfileEdit() {
       latitude: p.kitchen?.latitude ?? '', longitude: p.kitchen?.longitude ?? '',
     },
   })
+  const latitude = watch('latitude')
+  const longitude = watch('longitude')
 
   const save = useMutation({
     mutationFn: (v: Form) => api.put<CookProfile>('/cook/profile', {
@@ -87,6 +92,12 @@ export default function CookProfileEdit() {
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
     )
+  }
+
+  const setKitchenLocation = (lat: number, lng: number) => {
+    setValue('latitude', lat, { shouldDirty: true, shouldValidate: true })
+    setValue('longitude', lng, { shouldDirty: true, shouldValidate: true })
+    setLocationError('')
   }
 
   if (profile.isLoading) return <CookShell><LoadingState /></CookShell>
@@ -142,9 +153,12 @@ export default function CookProfileEdit() {
             {locationError && <p role="alert" className="text-sm text-red-600">{locationError}</p>}
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Input label="Latitude" type="number" step="any" inputMode="decimal" hint="Filled from your location or enter manually" {...register('latitude')} error={errors.latitude?.message} />
-            <Input label="Longitude" type="number" step="any" inputMode="decimal" hint="Filled from your location or enter manually" {...register('longitude')} error={errors.longitude?.message} />
+            <Input label="Latitude" type="number" step="any" inputMode="decimal" hint="Filled from your location, map or enter manually" {...register('latitude')} error={errors.latitude?.message} />
+            <Input label="Longitude" type="number" step="any" inputMode="decimal" hint="Filled from your location, map or enter manually" {...register('longitude')} error={errors.longitude?.message} />
           </div>
+          <Suspense fallback={<LoadingState label="Loading map…" />}>
+            <KitchenLocationPicker latitude={latitude} longitude={longitude} onSelect={setKitchenLocation} />
+          </Suspense>
           <div>
             <p className="label">Kitchen photos</p>
             <div className="flex flex-wrap gap-3">
