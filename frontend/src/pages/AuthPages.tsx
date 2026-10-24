@@ -148,9 +148,9 @@ export function Register() {
   return (
     <Shell title="Join GharSe" subtitle={role === 'COOK' ? 'Share your kitchen with your neighbourhood.' : 'Discover amazing Home Cooks around you.'}>
       <form onSubmit={handleSubmit((v) => m.mutate(v))} className="space-y-4" noValidate>
-        <Select label="I want to…" {...register('role')}>
-          <option value="CUSTOMER">Order homemade food</option>
-          <option value="COOK">Cook and sell food</option>
+        <Select label="I’m signing up as" {...register('role')}>
+          <option value="CUSTOMER">Foodie — order homemade food</option>
+          <option value="COOK">Home Cook — sell homemade food</option>
         </Select>
         <Input label="Full name" autoComplete="name" {...register('name')} error={errors.name?.message} />
         <Input label="Email" type="email" autoComplete="email" {...register('email')} error={errors.email?.message} />
