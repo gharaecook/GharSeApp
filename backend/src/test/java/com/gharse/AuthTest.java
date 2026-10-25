@@ -106,6 +106,30 @@ class AuthTest extends IntegrationTestBase {
     }
 
     @Test
+    void customerCanSaveStructuredDeliveryAddressAndMapLocation() {
+        Acct customer = registerCustomer();
+        JsonNode response = put("/api/v1/users/me", customer.token(), Map.of(
+                "name", customer.name(),
+                "phone", "9876543210",
+                "address", "Flat 12, A Wing",
+                "society", "Green Park Society",
+                "area", "Kothrud",
+                "landmark", "Near City Park",
+                "deliveryLatitude", 18.5074,
+                "deliveryLongitude", 73.8077));
+
+        assertThat(response.path("address").asText()).isEqualTo("Flat 12, A Wing");
+        assertThat(response.path("society").asText()).isEqualTo("Green Park Society");
+        assertThat(response.path("area").asText()).isEqualTo("Kothrud");
+        assertThat(response.path("formattedAddress").asText())
+                .isEqualTo("Flat 12, A Wing, Green Park Society, Kothrud, Near City Park");
+        assertThat(response.path("deliveryLatitude").asDouble()).isEqualTo(18.5074);
+        assertThat(response.path("deliveryLongitude").asDouble()).isEqualTo(73.8077);
+        assertThat(users.findById(customer.userId()).orElseThrow().deliveryAddress())
+                .isEqualTo(response.path("formattedAddress").asText());
+    }
+
+    @Test
     void refreshTokenIssuesANewPairButAnAccessTokenCannotBeUsedToRefresh() {
         Acct a = registerCustomer();
         JsonNode login = post("/api/v1/auth/login", null, Map.of("email", a.email(), "password", PASSWORD));

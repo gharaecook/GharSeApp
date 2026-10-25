@@ -111,7 +111,8 @@ public class OrderService {
             qtyByBatch.merge(b.getId(), ci.getQuantity(), Integer::sum);
             batchById.put(b.getId(), b);
         }
-        String address = req.deliveryAddress() != null && !req.deliveryAddress().isBlank() ? req.deliveryAddress().trim() : customer.getAddress();
+        String address = req.deliveryAddress() != null && !req.deliveryAddress().isBlank()
+                ? req.deliveryAddress().trim() : customer.deliveryAddress();
         if (req.orderType().isDelivery() && (address == null || address.isBlank())) {
             throw ApiException.badRequest("DELIVERY_ADDRESS_REQUIRED", "A delivery address is required");
         }

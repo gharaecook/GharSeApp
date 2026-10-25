@@ -30,18 +30,26 @@ interface KitchenLocationPickerProps {
   latitude?: number | ''
   longitude?: number | ''
   onSelect: (latitude: number, longitude: number) => void
+  title?: string
+  instruction?: string
 }
 
-export function KitchenLocationPicker({ latitude, longitude, onSelect }: KitchenLocationPickerProps) {
+export function KitchenLocationPicker({
+  latitude,
+  longitude,
+  onSelect,
+  title = 'Select kitchen location on map',
+  instruction = 'Click the map or drag the pin to set your location.',
+}: KitchenLocationPickerProps) {
   const hasLocation = typeof latitude === 'number' && Number.isFinite(latitude)
     && typeof longitude === 'number' && Number.isFinite(longitude)
   const center: [number, number] = hasLocation ? [latitude, longitude] : defaultCenter
 
   return (
     <div>
-      <p className="label">Select kitchen location on map</p>
-      <p className="mb-2 text-sm text-ink-500">Click the map or drag the pin to set your location.</p>
-      <div className="h-72 overflow-hidden rounded-xl border border-cream-300" aria-label="Kitchen location map">
+      <p className="label">{title}</p>
+      <p className="mb-2 text-sm text-ink-500">{instruction}</p>
+      <div className="h-72 overflow-hidden rounded-xl border border-cream-300" aria-label="Location selection map">
         <MapContainer center={center} zoom={hasLocation ? 15 : 11} scrollWheelZoom className="h-full w-full">
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

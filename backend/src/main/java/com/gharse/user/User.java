@@ -45,4 +45,27 @@ public class User extends BaseEntity {
     private UserStatus status = UserStatus.ACTIVE;
 
     private String address;
+
+    @Column(length = 120)
+    private String society;
+
+    @Column(length = 120)
+    private String area;
+
+    @Column(length = 200)
+    private String landmark;
+
+    @Column(name = "delivery_latitude")
+    private Double deliveryLatitude;
+
+    @Column(name = "delivery_longitude")
+    private Double deliveryLongitude;
+
+    public String deliveryAddress() {
+        String detailed = java.util.stream.Stream.of(address, society, area, landmark)
+                .filter(part -> part != null && !part.isBlank())
+                .map(String::trim)
+                .collect(java.util.stream.Collectors.joining(", "));
+        return detailed.isBlank() ? null : detailed;
+    }
 }

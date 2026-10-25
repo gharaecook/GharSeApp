@@ -2,9 +2,8 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api'
-import { useAuth } from '../lib/auth'
 import { formatDate, orderTypeLabel, rupees } from '../lib/format'
-import type { Cart, Order, OrderType, User } from '../lib/types'
+import type { Cart, Order, OrderType, UserProfile } from '../lib/types'
 import { Button, Card, EmptyState, ErrorState, FormError, LoadingState, PageTitle, Textarea } from '../components/ui'
 
 const FEES: Record<OrderType, string> = { PICKUP: 'Free', COOK_DELIVERY: '₹30', THIRD_PARTY_DELIVERY: 'Courier quote at checkout (≈ ₹60)' }
@@ -12,12 +11,12 @@ const FEES: Record<OrderType, string> = { PICKUP: 'Free', COOK_DELIVERY: '₹30'
 export default function Checkout() {
   const navigate = useNavigate()
   const qc = useQueryClient()
-  const { user } = useAuth()
   const [type, setType] = useState<OrderType>('PICKUP')
-  const me = useQuery({ queryKey: ['me'], queryFn: () => api.get<User>('/users/me') })
+  const me = useQuery({ queryKey: ['me'], queryFn: () => api.get<UserProfile>('/users/me') })
   const cart = useQuery({ queryKey: ['cart'], queryFn: () => api.get<Cart>('/cart') })
   const [address, setAddress] = useState<string | null>(null)
-  const addr = address ?? me.data?.address ?? ''
+  const savedAddress = me.data?.formattedAddress || me.data?.address || ''
+  const addr = address ?? savedAddress
 
   const place = useMutation({
     mutationFn: () => api.post<Order>('/orders', { orderType: type, deliveryAddress: type === 'PICKUP' ? undefined : addr }),
@@ -50,7 +49,14 @@ export default function Checkout() {
                 </label>
               ))}
             </div>
-            {needsAddress && <Textarea className="mt-4" label="Delivery address" rows={3} value={addr} onChange={(e) => setAddress(e.target.value)} placeholder="Flat, building, street, area" />}
+            {needsAddress && (
+              <div className="mt-4">
+                <Textarea label="Delivery address" rows={3} value={addr} onChange={(e) => setAddress(e.target.value)} placeholder="Flat, society, area, landmark" />
+                <Link to="/profile" className="mt-2 inline-block text-sm font-bold text-brand-600 hover:underline">
+                  {savedAddress ? 'Edit saved address and map pin' : 'Add your address and map pin'}
+                </Link>
+              </div>
+            )}
             {type === 'PICKUP' && <p className="mt-3 text-sm text-ink-500">The pickup address is shared once {c.cookName} confirms your order.</p>}
           </Card>
           <Card className="p-5">
@@ -69,7 +75,7 @@ export default function Checkout() {
             <div className="flex justify-between text-base font-extrabold"><span>Total</span><span>{rupees(c.subtotal + fee)}</span></div>
           </div>
           <FormError error={place.error} />
-          <Button className="mt-4 w-full" loading={place.isPending} disabled={needsAddress && !addr.trim() && !user?.address} onClick={() => place.mutate()}>Place order &amp; pay</Button>
+          <Button className="mt-4 w-full" loading={place.isPending} disabled={needsAddress && !addr.trim()} onClick={() => place.mutate()}>Place order &amp; pay</Button>
         </Card>
       </div>
     </div>

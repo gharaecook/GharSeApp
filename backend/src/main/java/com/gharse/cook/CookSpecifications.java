@@ -26,12 +26,12 @@ public final class CookSpecifications {
     public static Specification<Cook> discover(CookSearch s, LocalDate today, Instant now) {
         return (root, query, cb) -> {
             List<Predicate> ps = new ArrayList<>();
+            var user = root.join("user");
             ps.add(cb.equal(root.get("approvalStatus"), ApprovalStatus.APPROVED));
-            ps.add(cb.equal(root.join("user").get("status"), UserStatus.ACTIVE));
+            ps.add(cb.equal(user.get("status"), UserStatus.ACTIVE));
 
             if (has(s.q())) {
                 String like = "%" + escape(s.q().trim().toLowerCase()) + "%";
-                var user = root.join("user");
                 Subquery<Integer> cuisineSub = query.subquery(Integer.class);
                 Root<Cook> cr = cuisineSub.from(Cook.class);
                 var cj = cr.<Cook, Cuisine>join("cuisines");

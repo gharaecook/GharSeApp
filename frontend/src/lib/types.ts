@@ -10,6 +10,10 @@ export interface User {
   id: string; name: string; email: string; phone: string; role: Role; status: string
   address?: string; cookId?: string; createdAt: string
 }
+export interface UserProfile extends User {
+  society?: string; area?: string; landmark?: string; formattedAddress?: string
+  deliveryLatitude?: number; deliveryLongitude?: number
+}
 export interface AuthResponse { accessToken: string; refreshToken: string; expiresIn: number; user: User }
 
 export interface Page<T> { content: T[]; page: number; size: number; totalElements: number; totalPages: number }
