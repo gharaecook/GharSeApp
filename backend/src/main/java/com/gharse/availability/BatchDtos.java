@@ -43,12 +43,17 @@ public final class BatchDtos {
                                 List<BatchDishResponse> dishes) {
 
         public static BatchResponse of(Batch b, Instant now) {
+            return of(b, now, false);
+        }
+
+        public static BatchResponse of(Batch b, Instant now, boolean activeDishesOnly) {
             var cook = b.getCook();
             return new BatchResponse(b.getId(), cook.getId(), cook.getUser().getName(), cook.getLocality(), b.getName(),
                     b.getDescription(), b.getAvailableDate(), b.getOrderCutoff(), b.getCapacity(), b.getReservedQuantity(),
                     b.remaining(), b.isSoldOut(), b.isOrderingOpen(now), b.getPickupStart(), b.getPickupEnd(),
                     b.getDeliveryStart(), b.getDeliveryEnd(), b.getStatus(),
-                    b.getDishes().stream().map(i -> new BatchDishResponse(i.getDish().getId(), i.getDish().getName(),
+                    b.getDishes().stream().filter(i -> !activeDishesOnly || i.getDish().isActive())
+                            .map(i -> new BatchDishResponse(i.getDish().getId(), i.getDish().getName(),
                             i.getDish().getImageUrl(), i.getPrice(), i.getDish().isVegetarian(),
                             i.getDish().getPortionDescription())).toList());
         }

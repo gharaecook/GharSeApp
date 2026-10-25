@@ -13,6 +13,7 @@ import com.gharse.kitchen.KitchenRepository;
 import com.gharse.order.OrderRepository;
 import com.gharse.user.User;
 import com.gharse.user.UserRepository;
+import com.gharse.user.UserStatus;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -81,7 +82,9 @@ public class CookService {
     }
 
     public List<CookSummary> topCooks() {
-        List<Cook> approved = cooks.findByApprovalStatus(ApprovalStatus.APPROVED);
+        List<Cook> approved = cooks.findByApprovalStatus(ApprovalStatus.APPROVED).stream()
+                .filter(c -> c.getUser().getStatus() == UserStatus.ACTIVE)
+                .toList();
         Map<UUID, Long> completedOrders = completedOrderCounts(approved);
         Comparator<Cook> ranking = Comparator
                 .<Cook>comparingLong(c -> completedOrders.getOrDefault(c.getId(), 0L))
@@ -105,7 +108,9 @@ public class CookService {
     }
 
     public Cook getApproved(UUID id) {
-        return cooks.findById(id).filter(Cook::isApproved).orElseThrow(() -> ApiException.notFound("Cook"));
+        return cooks.findById(id).filter(Cook::isApproved)
+                .filter(c -> c.getUser().getStatus() == UserStatus.ACTIVE)
+                .orElseThrow(() -> ApiException.notFound("Cook"));
     }
 
     public List<CookSummary> summariesOf(List<Cook> list) {

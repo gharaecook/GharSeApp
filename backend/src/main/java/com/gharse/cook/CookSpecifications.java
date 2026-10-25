@@ -4,6 +4,7 @@ import com.gharse.availability.Batch;
 import com.gharse.availability.BatchStatus;
 import com.gharse.cuisine.Cuisine;
 import com.gharse.menu.Dish;
+import com.gharse.user.UserStatus;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -26,6 +27,7 @@ public final class CookSpecifications {
         return (root, query, cb) -> {
             List<Predicate> ps = new ArrayList<>();
             ps.add(cb.equal(root.get("approvalStatus"), ApprovalStatus.APPROVED));
+            ps.add(cb.equal(root.join("user").get("status"), UserStatus.ACTIVE));
 
             if (has(s.q())) {
                 String like = "%" + escape(s.q().trim().toLowerCase()) + "%";

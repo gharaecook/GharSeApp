@@ -114,6 +114,22 @@ class CookApprovalAndCatalogTest extends IntegrationTestBase {
     }
 
     @Test
+    void deactivatedDishIsHiddenFromPublicBatchListings() {
+        Acct cook = approvedCook("Batch cook " + unique());
+        UUID dish = createDish(cook, "Hidden special", 90);
+        UUID batch = createBatch(cook, dish, 10);
+
+        assertThat(get("/api/v1/cooks/" + cook.cookId() + "/batches", null).size()).isEqualTo(1);
+        assertThat(get("/api/v1/batches?limit=50", null).toString()).contains("Hidden special");
+
+        delete("/api/v1/cook/dishes/" + dish, cook.token(), 204);
+
+        assertThat(get("/api/v1/cooks/" + cook.cookId() + "/batches", null)).isEmpty();
+        assertThat(get("/api/v1/batches?limit=50", null).toString()).doesNotContain("Hidden special");
+        assertThat(get("/api/v1/cook/batches", cook.token()).toString()).contains(batch.toString(), "Hidden special");
+    }
+
+    @Test
     void dishValidationRejectsNegativePrice() {
         Acct a = approvedCook();
         JsonNode err = post("/api/v1/cook/dishes", a.token(), Map.of("name", "Free?", "category", "MEAL", "price", -5), 400);

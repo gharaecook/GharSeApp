@@ -92,6 +92,20 @@ class AuthTest extends IntegrationTestBase {
     }
 
     @Test
+    void suspendedCookIsHiddenFromPublicDiscovery() {
+        Acct cook = approvedCook("Suspended " + unique());
+        Acct admin = admin();
+
+        assertThat(get("/api/v1/cooks/" + cook.cookId(), null).path("summary").path("id").asText())
+                .isEqualTo(cook.cookId().toString());
+        post("/api/v1/admin/users/" + cook.userId() + "/suspend", admin.token(), null);
+
+        get("/api/v1/cooks/" + cook.cookId(), null, 404);
+        assertThat(get("/api/v1/cooks?size=100", null).path("content").toString()).doesNotContain(cook.cookId().toString());
+        assertThat(get("/api/v1/cooks/top", null).toString()).doesNotContain(cook.cookId().toString());
+    }
+
+    @Test
     void refreshTokenIssuesANewPairButAnAccessTokenCannotBeUsedToRefresh() {
         Acct a = registerCustomer();
         JsonNode login = post("/api/v1/auth/login", null, Map.of("email", a.email(), "password", PASSWORD));

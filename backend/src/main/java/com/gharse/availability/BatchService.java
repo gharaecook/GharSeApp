@@ -49,7 +49,8 @@ public class BatchService {
         Instant now = clock.instant();
         return batches.findUpcoming(cookId, BatchStatus.OPEN, today()).stream()
                 .filter(b -> now.isBefore(b.getOrderCutoff()))
-                .map(b -> BatchResponse.of(b, now)).toList();
+                .filter(this::hasActiveDish)
+                .map(b -> BatchResponse.of(b, now, true)).toList();
     }
 
     /** Open batches across the marketplace. {@code today} restricts to today, {@code limited} to batches nearly sold out. */
@@ -60,8 +61,9 @@ public class BatchService {
                 .filter(b -> !b.isSoldOut())
                 .filter(b -> !todayOnly || b.getAvailableDate().equals(today))
                 .filter(b -> !limited || b.remaining() <= Math.max(5, Math.floor(b.getCapacity() * LIMITED_SHARE)))
+                .filter(this::hasActiveDish)
                 .limit(limit)
-                .map(b -> BatchResponse.of(b, now)).toList();
+                .map(b -> BatchResponse.of(b, now, true)).toList();
     }
 
     // ---------------------------------------------------------------- cook
@@ -141,5 +143,9 @@ public class BatchService {
 
     private LocalDate today() {
         return LocalDate.now(clock.withZone(zone));
+    }
+
+    private boolean hasActiveDish(Batch batch) {
+        return batch.getDishes().stream().anyMatch(item -> item.getDish().isActive());
     }
 }

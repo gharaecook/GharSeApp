@@ -21,6 +21,7 @@ public interface BatchRepository extends JpaRepository<Batch, UUID> {
 
     @Query("select b from Batch b join fetch b.cook c join fetch c.user where b.status = :status "
             + "and b.availableDate >= :from and c.approvalStatus = com.gharse.cook.ApprovalStatus.APPROVED "
+            + "and c.user.status = com.gharse.user.UserStatus.ACTIVE "
             + "and b.orderCutoff > :now order by b.availableDate, b.orderCutoff")
     List<Batch> findOpenForDiscovery(@Param("status") BatchStatus status, @Param("from") LocalDate from, @Param("now") Instant now);
 
