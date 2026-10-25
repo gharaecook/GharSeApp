@@ -21,11 +21,11 @@ export const ADMIN_NAV: NavItem[] = [
 /** Horizontal tab bar used across the cook and admin areas (scrolls on small screens). */
 export function SectionNav({ items }: { items: NavItem[] }) {
   return (
-    <nav aria-label="Section" className="border-b border-cream-300 bg-white">
-      <div className="container-page flex gap-1 overflow-x-auto py-2">
+    <nav aria-label="Section" className="border-b border-cream-300/80 bg-white/90 backdrop-blur">
+      <div className="container-page flex gap-1 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {items.map((i) => (
           <NavLink key={i.to} to={i.to} end={i.end}
-            className={({ isActive }) => `whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-bold ${isActive ? 'bg-brand-100 text-brand-700' : 'text-ink-700 hover:bg-cream-200'}`}>
+            className={({ isActive }) => `whitespace-nowrap rounded-full px-3.5 py-2 text-sm font-bold transition active:scale-95 ${isActive ? 'bg-brand-100 text-brand-700' : 'text-ink-700 hover:bg-cream-200'}`}>
             {i.label}
           </NavLink>
         ))}

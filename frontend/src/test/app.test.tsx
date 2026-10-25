@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -45,6 +45,13 @@ describe('registration schema', () => {
 })
 
 describe('routing and guards', () => {
+  it('shows compact app navigation for mobile visitors', () => {
+    renderAt('/')
+    const nav = screen.getByRole('navigation', { name: 'Mobile navigation' })
+    expect(within(nav).getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/home')
+    expect(within(nav).getByRole('link', { name: 'Explore' })).toHaveAttribute('href', '/cooks')
+    expect(within(nav).getByRole('link', { name: 'Log in' })).toHaveAttribute('href', '/login')
+  })
   it('shows the login form', () => {
     renderAt('/login')
     expect(screen.getByRole('heading', { name: /welcome back/i })).toBeInTheDocument()

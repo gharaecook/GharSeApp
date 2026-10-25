@@ -15,9 +15,9 @@ const cuisineEmoji: Record<string, string> = {
 
 function Section({ title, subtitle, to, children }: { title: string; subtitle?: string; to?: string; children: ReactNode }) {
   return (
-    <section className="container-page mt-12">
+    <section className="container-page mt-8 sm:mt-12">
       <div className="mb-4 flex items-end justify-between gap-3">
-        <div><h2 className="text-2xl">{title}</h2>{subtitle && <p className="text-sm text-ink-500">{subtitle}</p>}</div>
+        <div><h2 className="text-xl sm:text-2xl">{title}</h2>{subtitle && <p className="text-sm text-ink-500">{subtitle}</p>}</div>
         {to && <Link to={to} className="text-sm font-bold text-brand-600 hover:underline">See all →</Link>}
       </div>
       {children}
@@ -33,7 +33,7 @@ function CookRow({ params, empty }: { params: Record<string, string | number | b
   if (isLoading) return <LoadingState />
   if (error) return <ErrorState error={error} onRetry={refetch} />
   if (!data?.content.length) return <EmptyState title={empty} />
-  return <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{data.content.map((c) => <CookCard key={c.id} cook={c} />)}</div>
+  return <div className="mobile-carousel">{data.content.map((c) => <CookCard key={c.id} cook={c} />)}</div>
 }
 
 function TopCookRow() {
@@ -44,7 +44,7 @@ function TopCookRow() {
   if (isLoading) return <LoadingState />
   if (error) return <ErrorState error={error} onRetry={refetch} />
   if (!data?.length) return <EmptyState title="No top cooks yet" />
-  return <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{data.map((cook, index) => <CookCard key={cook.id} cook={cook} awardRank={index + 1} />)}</div>
+  return <div className="mobile-carousel">{data.map((cook, index) => <CookCard key={cook.id} cook={cook} awardRank={index + 1} />)}</div>
 }
 
 export default function Home() {
@@ -60,16 +60,16 @@ export default function Home() {
   return (
     <>
       <div className="bg-gradient-to-b from-brand-100 via-cream-100 to-cream-100">
-        <div className="container-page py-12 text-center sm:py-20">
-          <p className="mb-3 inline-block rounded-full bg-white px-3 py-1 text-xs font-bold uppercase tracking-wider text-brand-600">घर जैसा खाना</p>
-          <h1 className="mx-auto max-w-3xl text-4xl leading-tight sm:text-5xl">Discover amazing <span className="text-brand-600">Home Cooks</span> around you.</h1>
-          <p className="mx-auto mt-3 max-w-xl text-lg text-ink-700">Homemade food. Real people. Local flavours.</p>
-          <form onSubmit={onSubmit} role="search" className="mx-auto mt-8 flex max-w-xl gap-2">
+        <div className="container-page py-8 text-left sm:py-20 sm:text-center">
+          <p className="mb-3 inline-block rounded-full bg-white px-3 py-1 text-xs font-bold uppercase tracking-wider text-brand-600">घर जैसा खाना · MADE NEAR YOU</p>
+          <h1 className="max-w-3xl text-[2.15rem] leading-[1.12] sm:mx-auto sm:text-5xl">Discover amazing <span className="text-brand-600">Home Cooks</span> around you.</h1>
+          <p className="mt-3 max-w-xl text-base text-ink-700 sm:mx-auto sm:text-lg">Homemade food. Real people. Local flavours.</p>
+          <form onSubmit={onSubmit} role="search" className="mt-6 flex max-w-xl gap-2 sm:mx-auto sm:mt-8">
             <input value={q} onChange={(e) => setQ(e.target.value)} aria-label="What are you craving?" placeholder="What are you craving?" className="input !rounded-full !py-3.5 !text-base shadow-card" />
-            <button className="rounded-full bg-brand-500 px-6 font-bold text-white hover:bg-brand-600">Search</button>
+            <button className="shrink-0 rounded-full bg-brand-500 px-5 font-bold text-white transition hover:bg-brand-600 active:scale-95 sm:px-6">Search</button>
           </form>
-          <div className="mt-4 flex flex-wrap justify-center gap-2">
-            {EXAMPLES.map((e) => <button key={e} onClick={() => go(e)} className="rounded-full border border-brand-200 bg-white px-3 py-1 text-sm font-semibold text-brand-700 hover:bg-brand-50">{e}</button>)}
+          <div className="mobile-category-row mt-3 sm:mt-4 sm:justify-center">
+            {EXAMPLES.map((e) => <button key={e} onClick={() => go(e)} className="shrink-0 rounded-full border border-brand-200 bg-white px-3.5 py-2 text-sm font-bold text-brand-700 transition hover:bg-brand-50 active:scale-95">{e}</button>)}
           </div>
         </div>
       </div>
@@ -85,9 +85,9 @@ export default function Home() {
       </Section>
       <Section title="Regional Specialities" subtitle="Every region has its own flavour">
         {cuisines.isLoading ? <LoadingState /> : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="mobile-category-row sm:grid sm:grid-cols-3 sm:overflow-visible sm:mx-0 sm:flex-none sm:flex-wrap sm:p-0 lg:grid-cols-5">
             {cuisines.data?.map((c) => (
-              <Link key={c.id} to={`/cooks${qs({ cuisine: c.name })}`} className="card flex items-center gap-3 p-4 transition hover:-translate-y-0.5 hover:shadow-lg">
+              <Link key={c.id} to={`/cooks${qs({ cuisine: c.name })}`} className="card flex min-w-[150px] shrink-0 items-center gap-3 p-3 transition hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] sm:min-w-0">
                 <span className="text-3xl" aria-hidden>{cuisineEmoji[c.name] ?? '🍽️'}</span>
                 <span className="font-extrabold">{c.name}</span>
               </Link>
@@ -100,7 +100,7 @@ export default function Home() {
       </Section>
       <Section title="Limited Batch" subtitle="Almost gone. Grab yours.">
         {limited.isLoading ? <LoadingState /> : limited.error ? <ErrorState error={limited.error} onRetry={limited.refetch} /> : !limited.data?.length ? <EmptyState title="No limited batches right now" /> : (
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="mobile-carousel md:grid-cols-3">
             {limited.data.map((b) => <BatchCard key={b.id} batch={b} showCook><Link to={`/cooks/${b.cookId}`} className="mt-3 inline-block text-sm font-bold text-brand-600 hover:underline">View cook →</Link></BatchCard>)}
           </div>
         )}
