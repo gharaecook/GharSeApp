@@ -1,6 +1,6 @@
 import { Route, Routes } from 'react-router-dom'
 import { Layout } from './components/Layout'
-import { RequireRole } from './components/Guards'
+import { RequireAuth, RequireRole } from './components/Guards'
 import { EmptyState } from './components/ui'
 import Home from './pages/Home'
 import Cooks from './pages/Cooks'
@@ -19,6 +19,7 @@ import { CookEarnings, CookOrders } from './pages/cook/CookOrders'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import { AdminCookDetail, AdminCooks } from './pages/admin/AdminCooks'
 import { AdminOrders, AdminUsers } from './pages/admin/AdminLists'
+import Notifications from './pages/Notifications'
 
 export default function App() {
   return (
@@ -33,6 +34,10 @@ export default function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+
+        <Route element={<RequireAuth />}>
+          <Route path="/notifications" element={<Notifications />} />
+        </Route>
 
         <Route element={<RequireRole role="CUSTOMER" />}>
           <Route path="/cart" element={<CartPage />} />

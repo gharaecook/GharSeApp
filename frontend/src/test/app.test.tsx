@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -67,6 +67,32 @@ describe('routing and guards', () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ content: [], totalElements: 0, totalPages: 0, items: [], itemCount: 0, unread: 0 }), { status: 200 }))
     renderAt('/admin')
     await waitFor(() => expect(screen.getByRole('heading', { name: /discover amazing/i })).toBeInTheDocument())
+  })
+  it('lists notifications and marks them as read', async () => {
+    localStorage.setItem('gharse.session', JSON.stringify({ accessToken: 'a', refreshToken: 'r', user: { id: '1', name: 'Priya K', email: 'p@x.in', phone: '1', role: 'CUSTOMER', status: 'ACTIVE', createdAt: '' } }))
+    let read = false
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (_input, init) => {
+      if (init?.method === 'POST') {
+        read = true
+        return new Response(null, { status: 204 })
+      }
+      return new Response(JSON.stringify({
+        unread: read ? 0 : 1,
+        items: [{ id: 'notice-1', type: 'ORDER_CONFIRMED', title: 'Order confirmed', message: 'Your order is confirmed.', read, createdAt: '2026-10-25T07:00:00Z' }],
+      }), { status: 200 })
+    })
+
+    renderAt('/notifications')
+    expect(await screen.findByRole('heading', { name: 'Notifications' })).toBeInTheDocument()
+    expect(await screen.findByText('Order confirmed')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Mark as read' }))
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/notifications/notice-1/read'),
+      expect.objectContaining({ method: 'POST' }),
+    ))
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Mark as read' })).not.toBeInTheDocument())
+    expect(screen.getByText('0 unread notifications')).toBeInTheDocument()
   })
   it('renders a friendly 404', () => {
     renderAt('/nothing-here')

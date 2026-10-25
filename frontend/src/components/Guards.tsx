@@ -10,3 +10,10 @@ export function RequireRole({ role }: { role: Role }) {
   if (user.role !== role) return <Navigate to={homeFor(user.role)} replace />
   return <Outlet />
 }
+
+export function RequireAuth() {
+  const { user } = useAuth()
+  const location = useLocation()
+  if (!user) return <Navigate to="/login" state={{ from: location.pathname + location.search }} replace />
+  return <Outlet />
+}

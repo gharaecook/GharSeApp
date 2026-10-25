@@ -73,6 +73,10 @@ function Navbar() {
                     <Link role="menuitem" className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-100" to="/profile">Profile</Link>
                     <Link role="menuitem" className="block rounded-lg px-3 py-2 text-sm hover:bg-cream-100" to="/favorites">Favourite cooks</Link>
                   </>}
+                  <Link role="menuitem" className="flex items-center justify-between rounded-lg px-3 py-2 text-sm hover:bg-cream-100" to="/notifications">
+                    Notifications
+                    {!!notes.data?.unread && <span className="rounded-full bg-brand-500 px-1.5 text-xs text-white">{notes.data.unread}</span>}
+                  </Link>
                   <button role="menuitem" className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-cream-100" onClick={() => { logout(); navigate('/') }}>Log out</button>
                 </div>
               )}
