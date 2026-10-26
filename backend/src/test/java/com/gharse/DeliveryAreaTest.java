@@ -12,6 +12,7 @@ class DeliveryAreaTest extends IntegrationTestBase {
     void adminCanManageNamedDeliveryAreas() {
         Acct admin = admin();
         Map<String, Object> place = Map.of(
+                "areaType", "PLACE",
                 "placeId", unique(),
                 "name", "Bavdhan",
                 "formattedAddress", "Bavdhan, Pune, Maharashtra, India",
@@ -19,17 +20,36 @@ class DeliveryAreaTest extends IntegrationTestBase {
                 "city", "Pune",
                 "latitude", 18.5236,
                 "longitude", 73.7812,
-                "status", "NOT_STARTED");
+                "status", "NOT_SUPPORTED");
 
         JsonNode area = post("/api/v1/admin/delivery-areas", admin.token(), place);
-        assertThat(area.path("status").asText()).isEqualTo("NOT_STARTED");
+        assertThat(area.path("status").asText()).isEqualTo("NOT_SUPPORTED");
         assertThat(get("/api/v1/admin/delivery-areas", admin.token()).toString()).contains(area.path("id").asText());
         put("/api/v1/admin/delivery-areas/" + area.path("id").asText() + "/status", admin.token(),
-                Map.of("status", "DELIVERING"));
-        assertThat(get("/api/v1/admin/delivery-areas", admin.token()).get(0).path("status").asText()).isEqualTo("DELIVERING");
+                Map.of("status", "SUPPORTED"));
+        assertThat(get("/api/v1/admin/delivery-areas", admin.token()).get(0).path("status").asText()).isEqualTo("SUPPORTED");
 
         delete("/api/v1/admin/delivery-areas/" + area.path("id").asText(), admin.token(), 200);
         assertThat(get("/api/v1/admin/delivery-areas", admin.token()).size()).isZero();
+    }
+
+    @Test
+    void adminCanSaveAndRemoveDrawnDeliveryRegions() {
+        Acct admin = admin();
+        Map<String, Object> region = Map.of(
+                "areaType", "REGION",
+                "name", "West Pune",
+                "status", "SUPPORTED",
+                "boundary", java.util.List.of(
+                        Map.of("latitude", 18.55, "longitude", 73.75),
+                        Map.of("latitude", 18.50, "longitude", 73.72),
+                        Map.of("latitude", 18.48, "longitude", 73.80)));
+
+        JsonNode area = post("/api/v1/admin/delivery-areas", admin.token(), region);
+        assertThat(area.path("areaType").asText()).isEqualTo("REGION");
+        assertThat(area.path("boundary").size()).isEqualTo(3);
+        assertThat(area.path("status").asText()).isEqualTo("SUPPORTED");
+        delete("/api/v1/admin/delivery-areas/" + area.path("id").asText(), admin.token(), 200);
     }
 
     @Test
@@ -45,7 +65,7 @@ class DeliveryAreaTest extends IntegrationTestBase {
                 "city", "Test",
                 "latitude", 91,
                 "longitude", 0,
-                "status", "DELIVERING");
+                "status", "SUPPORTED");
         post("/api/v1/admin/delivery-areas", admin().token(), invalid, 400);
     }
 

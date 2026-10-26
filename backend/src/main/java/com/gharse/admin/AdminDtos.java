@@ -13,6 +13,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.Valid;
 
 public final class AdminDtos {
 
@@ -34,22 +35,26 @@ public final class AdminDtos {
 
     public record AdminCookDetail(CookProfileResponse profile, List<DishResponse> dishes) {}
 
-    public record DeliveryAreaResponse(UUID id, String placeId, String name, String formattedAddress, String locality,
-                                       String city, double latitude, double longitude, DeliveryAreaStatus status) {
+    public record DeliveryAreaResponse(UUID id, DeliveryAreaType areaType, String placeId, String name,
+                                       String formattedAddress, String locality, String city, Double latitude,
+                                       Double longitude, List<DeliveryAreaPoint> boundary, DeliveryAreaStatus status) {
         public static DeliveryAreaResponse of(DeliveryArea area) {
-            return new DeliveryAreaResponse(area.getId(), area.getPlaceId(), area.getName(), area.getFormattedAddress(),
-                    area.getLocality(), area.getCity(), area.getLatitude(), area.getLongitude(), area.getStatus());
+            return new DeliveryAreaResponse(area.getId(), area.getAreaType(), area.getPlaceId(), area.getName(),
+                    area.getFormattedAddress(), area.getLocality(), area.getCity(), area.getLatitude(),
+                    area.getLongitude(), area.getBoundary(), area.getStatus());
         }
     }
 
     public record CreateDeliveryAreaRequest(
-            @NotBlank @Size(max = 200) String placeId,
+            DeliveryAreaType areaType,
+            @Size(max = 200) String placeId,
             @NotBlank @Size(max = 160) String name,
-            @NotBlank @Size(max = 500) String formattedAddress,
-            @NotBlank @Size(max = 120) String locality,
-            @NotBlank @Size(max = 120) String city,
-            @NotNull @DecimalMin("-90.0") @DecimalMax("90.0") Double latitude,
-            @NotNull @DecimalMin("-180.0") @DecimalMax("180.0") Double longitude,
+            @Size(max = 500) String formattedAddress,
+            @Size(max = 120) String locality,
+            @Size(max = 120) String city,
+            @DecimalMin("-90.0") @DecimalMax("90.0") Double latitude,
+            @DecimalMin("-180.0") @DecimalMax("180.0") Double longitude,
+            @Size(min = 3, max = 500) List<@NotNull @Valid DeliveryAreaPoint> boundary,
             @NotNull DeliveryAreaStatus status) {}
 
     public record DeliveryAreaStatusRequest(@NotNull DeliveryAreaStatus status) {}

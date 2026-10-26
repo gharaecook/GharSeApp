@@ -144,10 +144,21 @@ public class AdminService {
     }
 
     public DeliveryAreaResponse addDeliveryArea(CreateDeliveryAreaRequest request) {
-        if (deliveryAreas.findByPlaceId(request.placeId()).isPresent()) {
-            throw ApiException.conflict("DELIVERY_AREA_EXISTS", "This place is already on the delivery map");
+        DeliveryAreaType type = request.areaType() == null ? DeliveryAreaType.PLACE : request.areaType();
+        if (type == DeliveryAreaType.PLACE) {
+            if (request.placeId() == null || request.placeId().isBlank() || request.formattedAddress() == null
+                    || request.locality() == null || request.city() == null || request.latitude() == null
+                    || request.longitude() == null) {
+                throw ApiException.badRequest("INVALID_DELIVERY_AREA", "A place pin needs a place ID, address, locality, city and coordinates");
+            }
+            if (deliveryAreas.findByPlaceId(request.placeId()).isPresent()) {
+                throw ApiException.conflict("DELIVERY_AREA_EXISTS", "This place is already on the delivery map");
+            }
+        } else if (request.boundary() == null || request.boundary().size() < 3) {
+            throw ApiException.badRequest("INVALID_DELIVERY_AREA", "A delivery region must have at least three boundary points");
         }
         DeliveryArea area = new DeliveryArea();
+        area.setAreaType(type);
         area.setPlaceId(request.placeId());
         area.setName(request.name());
         area.setFormattedAddress(request.formattedAddress());
@@ -155,6 +166,7 @@ public class AdminService {
         area.setCity(request.city());
         area.setLatitude(request.latitude());
         area.setLongitude(request.longitude());
+        area.setBoundary(request.boundary());
         area.setStatus(request.status());
         return DeliveryAreaResponse.of(deliveryAreas.save(area));
     }

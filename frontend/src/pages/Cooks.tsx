@@ -44,7 +44,7 @@ export default function Cooks() {
   const choosePlace = (place: SelectedPlace) => {
     setSelectedPlace(place)
     const next = new URLSearchParams(params)
-    next.delete('locality')
+    if (place.locality) next.set('locality', place.locality); else next.delete('locality')
     if (place.city) next.set('city', place.city); else next.delete('city')
     next.set('lat', String(place.latitude))
     next.set('lng', String(place.longitude))

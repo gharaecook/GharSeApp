@@ -6,9 +6,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "delivery_area")
@@ -17,28 +20,34 @@ import lombok.Setter;
 @NoArgsConstructor
 public class DeliveryArea extends BaseEntity {
 
-    @Column(name = "place_id", nullable = false, unique = true, length = 200)
+    @Column(name = "place_id", unique = true, length = 200)
     private String placeId;
 
     @Column(nullable = false, length = 160)
     private String name;
 
-    @Column(name = "formatted_address", nullable = false, length = 500)
+    @Column(name = "formatted_address", length = 500)
     private String formattedAddress;
 
-    @Column(nullable = false, length = 120)
+    @Column(length = 120)
     private String locality;
 
-    @Column(nullable = false, length = 120)
+    @Column(length = 120)
     private String city;
 
-    @Column(nullable = false)
-    private double latitude;
+    private Double latitude;
 
-    @Column(nullable = false)
-    private double longitude;
+    private Double longitude;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "area_type", nullable = false, length = 16)
+    private DeliveryAreaType areaType = DeliveryAreaType.PLACE;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private List<DeliveryAreaPoint> boundary;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private DeliveryAreaStatus status = DeliveryAreaStatus.NOT_STARTED;
+    private DeliveryAreaStatus status = DeliveryAreaStatus.NOT_SUPPORTED;
 }
