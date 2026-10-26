@@ -3,6 +3,9 @@ package com.gharse.admin;
 import com.gharse.admin.AdminDtos.AdminCookDetail;
 import com.gharse.admin.AdminDtos.AdminCookRow;
 import com.gharse.admin.AdminDtos.DashboardResponse;
+import com.gharse.admin.AdminDtos.CreateDeliveryAreaRequest;
+import com.gharse.admin.AdminDtos.DeliveryAreaResponse;
+import com.gharse.admin.AdminDtos.DeliveryAreaStatusRequest;
 import com.gharse.common.ApiException;
 import com.gharse.common.AppProperties;
 import com.gharse.common.PageResponse;
@@ -48,10 +51,12 @@ public class AdminService {
     private final NotificationService notifications;
     private final AppProperties props;
     private final StorageService storage;
+    private final DeliveryAreaRepository deliveryAreas;
 
     public AdminService(UserRepository users, CookRepository cooks, KitchenRepository kitchens, CookDocumentRepository documents,
                         DishRepository dishes, OrderRepository orders, CookService cookService,
-                        NotificationService notifications, AppProperties props, StorageService storage) {
+                        NotificationService notifications, AppProperties props, StorageService storage,
+                        DeliveryAreaRepository deliveryAreas) {
         this.users = users;
         this.cooks = cooks;
         this.kitchens = kitchens;
@@ -62,6 +67,7 @@ public class AdminService {
         this.notifications = notifications;
         this.props = props;
         this.storage = storage;
+        this.deliveryAreas = deliveryAreas;
     }
 
     @Transactional(readOnly = true)
@@ -129,6 +135,39 @@ public class AdminService {
             user.setCredentialVersion(user.getCredentialVersion() + 1);
         }
         return UserResponse.of(user, null);
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<DeliveryAreaResponse> deliveryAreas() {
+        return deliveryAreas.findAllByOrderByCityAscLocalityAsc().stream()
+                .map(DeliveryAreaResponse::of).toList();
+    }
+
+    public DeliveryAreaResponse addDeliveryArea(CreateDeliveryAreaRequest request) {
+        if (deliveryAreas.findByPlaceId(request.placeId()).isPresent()) {
+            throw ApiException.conflict("DELIVERY_AREA_EXISTS", "This place is already on the delivery map");
+        }
+        DeliveryArea area = new DeliveryArea();
+        area.setPlaceId(request.placeId());
+        area.setName(request.name());
+        area.setFormattedAddress(request.formattedAddress());
+        area.setLocality(request.locality());
+        area.setCity(request.city());
+        area.setLatitude(request.latitude());
+        area.setLongitude(request.longitude());
+        area.setStatus(request.status());
+        return DeliveryAreaResponse.of(deliveryAreas.save(area));
+    }
+
+    public DeliveryAreaResponse setDeliveryAreaStatus(UUID id, DeliveryAreaStatusRequest request) {
+        DeliveryArea area = deliveryAreas.findById(id).orElseThrow(() -> ApiException.notFound("Delivery area"));
+        area.setStatus(request.status());
+        return DeliveryAreaResponse.of(area);
+    }
+
+    public void deleteDeliveryArea(UUID id) {
+        DeliveryArea area = deliveryAreas.findById(id).orElseThrow(() -> ApiException.notFound("Delivery area"));
+        deliveryAreas.delete(area);
     }
 
     @Transactional(readOnly = true)

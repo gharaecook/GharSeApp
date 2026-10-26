@@ -73,6 +73,9 @@ cd frontend && npm run lint && npm test && npm run build
 | `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | Backend-only Supabase project URL and service-role secret (required with Supabase storage) | unset |
 | `SUPABASE_PUBLIC_BUCKET` / `SUPABASE_PRIVATE_BUCKET` | Public image bucket and private document bucket names | `gharse-media` / `gharse-documents` |
 | `VITE_API_URL` (frontend) | Backend base URL | `http://localhost:8080` |
+| `VITE_GOOGLE_MAPS_API_KEY` (frontend) | Google Maps JavaScript, Places, and Geocoding APIs key | unset |
+
+The Google Maps key is bundled into the browser app. Restrict it to the required APIs and your app's allowed origins in Google Cloud.
 
 Profiles: `local` (default), `test`, `prod`. Secrets are never committed; see `.gitignore`.
 

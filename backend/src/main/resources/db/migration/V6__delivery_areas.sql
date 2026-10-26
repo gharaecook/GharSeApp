@@ -1,0 +1,13 @@
+CREATE TABLE delivery_area (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    place_id VARCHAR(200) NOT NULL UNIQUE,
+    name VARCHAR(160) NOT NULL,
+    formatted_address VARCHAR(500) NOT NULL,
+    locality VARCHAR(120) NOT NULL,
+    city VARCHAR(120) NOT NULL,
+    latitude DOUBLE PRECISION NOT NULL CHECK (latitude BETWEEN -90 AND 90),
+    longitude DOUBLE PRECISION NOT NULL CHECK (longitude BETWEEN -180 AND 180),
+    status VARCHAR(20) NOT NULL DEFAULT 'NOT_STARTED' CHECK (status IN ('DELIVERING', 'NOT_STARTED'))
+);

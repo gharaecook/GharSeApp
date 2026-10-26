@@ -18,7 +18,17 @@ See the README for the three-command quick start. Details:
 
 ## Frontend
 - `npm run dev` (Vite, port 5173), `npm run lint`, `npm test` (Vitest + Testing Library), `npm run build`.
-- `VITE_API_URL` in `frontend/.env` points at the backend.
+- `VITE_API_URL` in `frontend/.env` points at the backend. Set `VITE_GOOGLE_MAPS_API_KEY` to a Google Maps Platform key
+  with Maps JavaScript API, Places API, and Geocoding API enabled. Restrict the key to the app's origins and those APIs.
+
+### iOS app
+The Capacitor app loads a bundled copy of the frontend; running Vite does not update it. After frontend changes, rebuild and sync the bundle, then relaunch the app in Xcode:
+
+```sh
+cd frontend
+VITE_API_URL=https://gharsecook-1.onrender.com npm run build:ios
+npm run ios
+```
 
 ## Windows notes
 - Use `mvnw.cmd` instead of `./mvnw`.

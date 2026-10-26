@@ -14,6 +14,7 @@ export const COOK_NAV: NavItem[] = [
 export const ADMIN_NAV: NavItem[] = [
   { to: '/admin', label: 'Dashboard', end: true },
   { to: '/admin/cooks', label: 'Cooks' },
+  { to: '/admin/delivery-areas', label: 'Delivery areas' },
   { to: '/admin/orders', label: 'Orders' },
   { to: '/admin/users', label: 'Users' },
 ]
