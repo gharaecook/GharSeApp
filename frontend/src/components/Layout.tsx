@@ -9,8 +9,9 @@ import type { Cart, NotificationItem } from '../lib/types'
 
 export function Logo({ className = '' }: { className?: string }) {
   return (
-    <Link to="/" className={`flex items-center ${className}`} aria-label="CUOQO home">
+    <Link to="/" className={`flex flex-col items-center ${className}`} aria-label="CUOQO home">
       <img src="/cuoqo-logo.png" alt="" aria-hidden="true" className="h-14 w-auto object-contain sm:h-16" />
+      <span className="text-[10px] font-extrabold tracking-[0.2em] text-brand-800">CUOQO</span>
     </Link>
   )
 }
