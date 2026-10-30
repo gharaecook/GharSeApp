@@ -105,7 +105,7 @@ public class AdminService {
         documents.findByCookIdOrderByCreatedAtDesc(cookId).stream()
                 .filter(d -> d.getStatus() == ApprovalStatus.PENDING).forEach(d -> d.setStatus(ApprovalStatus.APPROVED));
         notifications.notify(c.getUser().getId(), NotificationType.COOK_APPROVED, "You're approved!",
-                "Welcome to GharSe. You can now add dishes and create batches.");
+                "Welcome to CUOQO. You can now add dishes and create batches.");
         return AdminCookRow.of(c);
     }
 

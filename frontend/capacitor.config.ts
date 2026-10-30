@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
   appId: 'com.gharse.app',
-  appName: 'GharSe',
+  appName: 'CUOQO',
   webDir: 'dist',
   ios: {
     contentInset: 'automatic',

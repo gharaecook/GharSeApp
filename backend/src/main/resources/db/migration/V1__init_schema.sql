@@ -1,4 +1,4 @@
--- GharSe base schema. All schema changes go through Flyway migrations.
+-- CUOQO base schema. All schema changes go through Flyway migrations.
 -- Money is NUMERIC(10,2). Status columns are stored as strings mapped to Java enums and guarded by CHECK constraints.
 
 CREATE TABLE users (

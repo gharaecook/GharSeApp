@@ -33,7 +33,7 @@ public class AppConfig {
     @Bean
     OpenAPI openAPI() {
         return new OpenAPI()
-                .info(new Info().title("GharSe API").version("v1")
+                .info(new Info().title("CUOQO API").version("v1")
                         .description("Find amazing Home Cooks around you. Errors use the ApiError body "
                                 + "(status, code, message, path, errors[]). Business-rule violations return 400/409 with a stable `code`."))
                 .components(new Components().addSecuritySchemes("bearerAuth",

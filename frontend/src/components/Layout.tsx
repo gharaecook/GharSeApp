@@ -9,8 +9,8 @@ import type { Cart, NotificationItem } from '../lib/types'
 
 export function Logo({ className = '' }: { className?: string }) {
   return (
-    <Link to="/" className={`flex items-center ${className}`} aria-label="GharSe home">
-      <img src="/gharse-logo.png" alt="" aria-hidden="true" className="h-14 w-auto object-contain sm:h-16" />
+    <Link to="/" className={`flex items-center ${className}`} aria-label="CUOQO home">
+      <img src="/cuoqo-logo.png" alt="" aria-hidden="true" className="h-14 w-auto object-contain sm:h-16" />
     </Link>
   )
 }
@@ -172,7 +172,7 @@ function Navbar() {
                 {PUNE_LOCALITIES.map((l) => <option key={l}>{l}</option>)}
               </select>
             </label>}
-            {user ? <AccountMenu mobile /> : <Link to="/register" className="rounded-full bg-brand-500 px-4 py-2 text-xs font-extrabold text-white active:scale-95">Join GharSe</Link>}
+            {user ? <AccountMenu mobile /> : <Link to="/register" className="rounded-full bg-brand-500 px-4 py-2 text-xs font-extrabold text-white active:scale-95">Join CUOQO</Link>}
           </div>
         </div>
         {!isHome && <form onSubmit={onSearch} role="search" className="w-full md:hidden">
@@ -196,7 +196,7 @@ export function Footer() {
           <Link to="/register?role=COOK">Become a Home Cook</Link>
         </div>
       </div>
-      <p className="pb-6 text-center text-xs text-ink-500">© {new Date().getFullYear()} GharSe · MVP</p>
+      <p className="pb-6 text-center text-xs text-ink-500">© {new Date().getFullYear()} CUOQO · MVP</p>
     </footer>
   )
 }

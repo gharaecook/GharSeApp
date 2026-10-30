@@ -1,6 +1,6 @@
-# GharSe — Find amazing Home Cooks around you
+# CUOQO — Find amazing Home Cooks around you
 
-GharSe is a two-sided marketplace: customers discover talented **Home Cooks**, read their story, pre-order from limited
+CUOQO is a two-sided marketplace: customers discover talented **Home Cooks**, read their story, pre-order from limited
 **batches**, and review them. The cook is the hero, not the restaurant.
 
 ```

@@ -1,4 +1,4 @@
-# Render Blueprint for the GharSe backend (Spring Boot, Docker) -> Supabase PostgreSQL.
+# Render Blueprint for the CUOQO backend (Spring Boot, Docker) -> Supabase PostgreSQL.
 # Secrets are never stored here: variables marked `sync: false` are entered in the Render dashboard.
 # See docs/deployment.md for the full walkthrough.
 services:
