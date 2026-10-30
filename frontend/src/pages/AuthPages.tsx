@@ -54,7 +54,7 @@ export function Login() {
         <Button type="submit" className="w-full" loading={m.isPending}>Log in</Button>
       </form>
       <p className="mt-3 text-right text-sm"><Link to="/forgot-password" className="font-bold text-brand-600">Forgot password?</Link></p>
-      <p className="mt-4 text-center text-sm text-ink-500">New to GharSe? <Link to="/register" className="font-bold text-brand-600">Create an account</Link></p>
+      <p className="mt-4 text-center text-sm text-ink-500">New to CUOQO? <Link to="/register" className="font-bold text-brand-600">Create an account</Link></p>
       {import.meta.env.DEV && <p className="mt-4 rounded-xl bg-cream-100 p-3 text-xs text-ink-500">Demo (local only): priya@gharse.demo · meena@gharse.demo · admin@gharse.demo — password <b>Demo@1234</b></p>}
     </Shell>
   )
@@ -146,7 +146,7 @@ export function Register() {
   })
   if (user) return <Navigate to={homeFor(user.role)} replace />
   return (
-    <Shell title="Join GharSe" subtitle={role === 'COOK' ? 'Share your kitchen with your neighbourhood.' : 'Discover amazing Home Cooks around you.'}>
+    <Shell title="Join CUOQO" subtitle={role === 'COOK' ? 'Share your kitchen with your neighbourhood.' : 'Discover amazing Home Cooks around you.'}>
       <form onSubmit={handleSubmit((v) => m.mutate(v))} className="space-y-4" noValidate>
         <Select label="I’m signing up as" {...register('role')}>
           <option value="CUSTOMER">Foodie — order homemade food</option>
@@ -160,7 +160,7 @@ export function Register() {
         <FormError error={m.error} />
         <Button type="submit" className="w-full" loading={m.isPending}>Create account</Button>
       </form>
-      {role === 'COOK' && <p className="mt-3 text-xs text-ink-500">New cooks are reviewed by GharSe before they can publish food.</p>}
+      {role === 'COOK' && <p className="mt-3 text-xs text-ink-500">New cooks are reviewed by CUOQO before they can publish food.</p>}
       <p className="mt-4 text-center text-sm text-ink-500">Already have an account? <Link to="/login" className="font-bold text-brand-600">Log in</Link></p>
     </Shell>
   )

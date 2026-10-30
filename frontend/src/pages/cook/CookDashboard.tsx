@@ -24,7 +24,7 @@ export default function CookDashboard() {
       {d.approvalStatus !== 'APPROVED' && (
         <div role="status" className={`mb-6 rounded-2xl p-4 ${d.approvalStatus === 'REJECTED' ? 'bg-red-50 text-red-800' : 'bg-amber-50 text-amber-900'}`}>
           <p className="font-extrabold">{d.approvalStatus === 'PENDING' ? 'Your profile is waiting for approval' : 'Your profile needs changes'}</p>
-          <p className="text-sm">{d.approvalStatus === 'PENDING' ? 'Complete your story, cuisines and kitchen details. You can add dishes and batches once GharSe approves you.' : p.rejectionReason}</p>
+          <p className="text-sm">{d.approvalStatus === 'PENDING' ? 'Complete your story, cuisines and kitchen details. You can add dishes and batches once CUOQO approves you.' : p.rejectionReason}</p>
           <Link to="/cook/profile" className="mt-2 inline-block text-sm font-bold underline">Update my profile</Link>
         </div>
       )}

@@ -194,7 +194,7 @@ public class CookService {
         Cook c = requireCook(userId);
         if (!c.isApproved()) {
             throw new ApiException(org.springframework.http.HttpStatus.FORBIDDEN, "COOK_NOT_APPROVED",
-                    "Your profile must be approved by GharSe before you can publish food");
+                    "Your profile must be approved by CUOQO before you can publish food");
         }
         return c;
     }

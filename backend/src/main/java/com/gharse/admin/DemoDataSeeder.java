@@ -90,7 +90,7 @@ public class DemoDataSeeder implements ApplicationRunner {
             return;
         }
         log.warn("Seeding DEMO data (accounts @gharse.demo, password {})", PASSWORD);
-        user("GharSe Demo Admin", MARKER_EMAIL, "9000000001", UserRole.ADMIN);
+        user("CUOQO Demo Admin", MARKER_EMAIL, "9000000001", UserRole.ADMIN);
         User priya = user("Priya Kulkarni", "priya@gharse.demo", "9000000002", UserRole.CUSTOMER);
         User rahul = user("Rahul Joshi", "rahul@gharse.demo", "9000000003", UserRole.CUSTOMER);
         priya.setAddress("Flat 12, Sunrise Apartments, Kothrud, Pune 411038");

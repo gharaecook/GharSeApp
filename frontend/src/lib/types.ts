@@ -101,4 +101,13 @@ export interface AdminCookRow {
 }
 export interface AdminCookDetail { profile: CookProfile; dishes: Dish[] }
 
+export type DeliveryAreaStatus = 'SUPPORTED' | 'NOT_SUPPORTED'
+export type DeliveryAreaType = 'PLACE' | 'REGION'
+export interface DeliveryAreaPoint { latitude: number; longitude: number }
+export interface DeliveryArea {
+  id: string; areaType: DeliveryAreaType; placeId?: string; name: string; formattedAddress?: string
+  locality?: string; city?: string; latitude?: number; longitude?: number
+  boundary?: DeliveryAreaPoint[]; status: DeliveryAreaStatus
+}
+
 export interface NotificationItem { id: string; type: string; title: string; message: string; read: boolean; createdAt: string }

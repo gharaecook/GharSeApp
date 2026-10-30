@@ -14,7 +14,7 @@
     <artifactId>gharse-backend</artifactId>
     <version>0.1.0</version>
     <name>gharse-backend</name>
-    <description>GharSe - Find amazing Home Cooks around you (modular monolith)</description>
+    <description>CUOQO - Find amazing Home Cooks around you (modular monolith)</description>
 
     <properties>
         <java.version>21</java.version>

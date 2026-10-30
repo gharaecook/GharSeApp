@@ -34,7 +34,7 @@ public class AdminBootstrap implements ApplicationRunner {
         if (email == null || email.isBlank() || password == null || password.length() < 8) return;
         if (users.existsByEmail(email)) return;
         User admin = new User();
-        admin.setName("GharSe Admin");
+        admin.setName("CUOQO Admin");
         admin.setPhone("0000000000");
         admin.setEmail(email.trim().toLowerCase());
         admin.setPasswordHash(encoder.encode(password));
