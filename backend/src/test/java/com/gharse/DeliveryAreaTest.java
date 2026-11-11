@@ -1,6 +1,8 @@
 package com.gharse;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Map;
@@ -72,7 +74,17 @@ class DeliveryAreaTest extends IntegrationTestBase {
     @Test
     void localitySearchMatchesBothLocalityAndCity() {
         approvedCook();
-        JsonNode results = get("/api/v1/cooks?locality=Kothrud%20Pune", null);
+        JsonNode results;
+        try {
+            String content = mvc.perform(get("/api/v1/cooks").param("locality", "Kothrud Pune"))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+            results = json.readTree(content);
+        } catch (AssertionError e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
         assertThat(results.path("content").toString()).contains("Kothrud");
     }
 }
