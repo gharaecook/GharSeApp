@@ -138,7 +138,7 @@ export function OrderDetail() {
         key: checkout.keyId,
         amount: checkout.amount,
         currency: checkout.currency,
-        name: 'CUOQO',
+        name: 'Zaykesh',
         description: `Payment for order #${o.orderNumber}`,
         order_id: checkout.orderId,
         handler: (response) => { verifyPayment.mutate(response) },

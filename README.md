@@ -1,6 +1,6 @@
-# CUOQO — Find amazing Home Cooks around you
+# Zaykesh — Find amazing Home Cooks around you
 
-CUOQO is a two-sided marketplace: customers discover talented **Home Cooks**, read their story, pre-order from limited
+Zaykesh is a two-sided marketplace: customers discover talented **Home Cooks**, read their story, pre-order from limited
 **batches**, and review them. The cook is the hero, not the restaurant.
 
 ```
