@@ -19,6 +19,7 @@ import { CookEarnings, CookOrders } from './pages/cook/CookOrders'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import { AdminCookDetail, AdminCooks } from './pages/admin/AdminCooks'
 import { AdminOrders, AdminUsers } from './pages/admin/AdminLists'
+import AdminDeliveryAreas from './pages/admin/AdminDeliveryAreas'
 import Notifications from './pages/Notifications'
 
 export default function App() {
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/cooks" element={<AdminCooks />} />
           <Route path="/admin/cooks/:id" element={<AdminCookDetail />} />
+          <Route path="/admin/delivery-areas" element={<AdminDeliveryAreas />} />
           <Route path="/admin/orders" element={<AdminOrders />} />
           <Route path="/admin/users" element={<AdminUsers />} />
         </Route>

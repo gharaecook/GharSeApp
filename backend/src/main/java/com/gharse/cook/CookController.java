@@ -49,13 +49,14 @@ public class CookController {
             @RequestParam(required = false) BigDecimal minRating,
             @RequestParam(required = false) Boolean availableToday,
             @RequestParam(required = false) String locality,
+            @RequestParam(required = false) String city,
             @RequestParam(required = false) Double lat,
             @RequestParam(required = false) Double lng,
             @RequestParam(defaultValue = "rating") String sort,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size) {
         int safeSize = Math.min(Math.max(size, 1), 50);
-        return service.search(new CookSearch(q, cuisine, category, vegetarian, minRating, availableToday, locality),
+        return service.search(new CookSearch(q, cuisine, category, vegetarian, minRating, availableToday, locality, city),
                 sort, lat, lng, Math.max(page, 0), safeSize);
     }
 

@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../lib/api'
+import { getCurrentLocation, LocationPermissionDeniedError } from '../../lib/deviceLocation'
 import type { CookProfile, Cuisine } from '../../lib/types'
 import { CookShell } from '../../components/SectionNav'
 import { Avatar, Badge, Button, Card, ErrorState, FormError, Input, LoadingState, PageTitle, Textarea } from '../../components/ui'
@@ -71,27 +72,20 @@ export default function CookProfileEdit() {
     try { done(await api.upload(file, folder)) } catch (e) { setUploadError(e) }
   }
 
-  const useCurrentLocation = () => {
+  const useCurrentLocation = async () => {
     setLocationError('')
-    if (!navigator.geolocation) {
-      setLocationError('Location is not supported in this browser. Enter the coordinates manually.')
-      return
-    }
     setLocating(true)
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
-        setValue('latitude', coords.latitude, { shouldDirty: true, shouldValidate: true })
-        setValue('longitude', coords.longitude, { shouldDirty: true, shouldValidate: true })
-        setLocating(false)
-      },
-      (error) => {
-        setLocationError(error.code === error.PERMISSION_DENIED
-          ? 'Location permission was denied. Allow location access in your browser or enter coordinates manually.'
-          : 'Could not get your location. Try again or enter the coordinates manually.')
-        setLocating(false)
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
-    )
+    try {
+      const position = await getCurrentLocation({ enableHighAccuracy: true, timeout: 15000, maximumAge: 0 })
+      setValue('latitude', position.latitude, { shouldDirty: true, shouldValidate: true })
+      setValue('longitude', position.longitude, { shouldDirty: true, shouldValidate: true })
+    } catch (error) {
+      setLocationError(error instanceof LocationPermissionDeniedError
+        ? 'Location permission was denied. Allow location access in your device settings or enter coordinates manually.'
+        : 'Could not get your location. Try again or enter the coordinates manually.')
+    } finally {
+      setLocating(false)
+    }
   }
 
   const setKitchenLocation = (lat: number, lng: number) => {

@@ -3,6 +3,9 @@ package com.gharse.admin;
 import com.gharse.admin.AdminDtos.AdminCookDetail;
 import com.gharse.admin.AdminDtos.AdminCookRow;
 import com.gharse.admin.AdminDtos.DashboardResponse;
+import com.gharse.admin.AdminDtos.CreateDeliveryAreaRequest;
+import com.gharse.admin.AdminDtos.DeliveryAreaResponse;
+import com.gharse.admin.AdminDtos.DeliveryAreaStatusRequest;
 import com.gharse.auth.AuthUser;
 import com.gharse.common.PageResponse;
 import com.gharse.cook.ApprovalStatus;
@@ -17,8 +20,10 @@ import jakarta.validation.Valid;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -39,6 +44,27 @@ public class AdminController {
     @GetMapping("/dashboard")
     public DashboardResponse dashboard() {
         return service.dashboard();
+    }
+
+    @GetMapping("/delivery-areas")
+    public java.util.List<DeliveryAreaResponse> deliveryAreas() {
+        return service.deliveryAreas();
+    }
+
+    @PostMapping("/delivery-areas")
+    public DeliveryAreaResponse addDeliveryArea(@Valid @RequestBody CreateDeliveryAreaRequest request) {
+        return service.addDeliveryArea(request);
+    }
+
+    @PutMapping("/delivery-areas/{id}/status")
+    public DeliveryAreaResponse setDeliveryAreaStatus(@PathVariable UUID id,
+                                                       @Valid @RequestBody DeliveryAreaStatusRequest request) {
+        return service.setDeliveryAreaStatus(id, request);
+    }
+
+    @DeleteMapping("/delivery-areas/{id}")
+    public void deleteDeliveryArea(@PathVariable UUID id) {
+        service.deleteDeliveryArea(id);
     }
 
     @GetMapping("/cooks")

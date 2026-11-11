@@ -28,7 +28,7 @@ Common codes: `VALIDATION_ERROR` 400, `UNAUTHORIZED` 401, `FORBIDDEN` 403, `NOT_
   Resetting a password invalidates refresh tokens; already-issued access tokens expire normally.
 
 ## Discovery (public)
-- `GET /cooks?q&cuisine&category&vegetarian&minRating&availableToday&locality&lat&lng&sort=rating|newest|popular&page&size`
+- `GET /cooks?q&cuisine&category&vegetarian&minRating&availableToday&locality&city&lat&lng&sort=rating|newest|popular&page&size`
 - `GET /cooks/{id}` (adds `favorite` when logged in) · `GET /cooks/{id}/dishes` · `GET /cooks/{id}/batches` · `GET /cooks/{id}/reviews`
 - `GET /dishes/{id}` · `GET /cuisines` · `GET /batches?today&limited&limit`
 
@@ -51,5 +51,8 @@ Common codes: `VALIDATION_ERROR` 400, `UNAUTHORIZED` 401, `FORBIDDEN` 403, `NOT_
 ## Admin
 `GET /admin/dashboard`, `GET /admin/cooks?status`, `GET /admin/cooks/pending`, `GET /admin/cooks/{id}`,
 `POST /admin/cooks/{id}/approve`, `POST /admin/cooks/{id}/reject {reason}`, `GET /admin/orders?status`, `GET /admin/users?role`
+- Delivery areas: `GET|POST /admin/delivery-areas`, `PUT /admin/delivery-areas/{id}/status {status: SUPPORTED|NOT_SUPPORTED}`,
+  `DELETE /admin/delivery-areas/{id}`. Create a place pin with its Google `placeId`, address, locality, city and coordinates,
+  or a region with a name and at least three `{latitude, longitude}` boundary points.
 
 Lists return `{content, page, size, totalElements, totalPages}`.

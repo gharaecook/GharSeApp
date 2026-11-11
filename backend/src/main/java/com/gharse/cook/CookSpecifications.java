@@ -69,7 +69,13 @@ public final class CookSpecifications {
                 ps.add(cb.greaterThanOrEqualTo(root.get("rating"), s.minRating()));
             }
             if (has(s.locality())) {
-                ps.add(cb.like(cb.lower(root.get("locality")), "%" + escape(s.locality().trim().toLowerCase()) + "%", '\\'));
+                var localityAndCity = cb.lower(cb.concat(
+                        cb.concat(cb.coalesce(root.<String>get("locality"), ""), " "),
+                        cb.coalesce(root.<String>get("city"), "")));
+                ps.add(cb.like(localityAndCity, "%" + escape(s.locality().trim().toLowerCase()) + "%", '\\'));
+            }
+            if (has(s.city())) {
+                ps.add(cb.equal(cb.lower(root.get("city")), s.city().trim().toLowerCase()));
             }
             if (Boolean.TRUE.equals(s.availableToday())) {
                 Subquery<Integer> sub = query.subquery(Integer.class);
