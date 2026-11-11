@@ -73,7 +73,7 @@ describe('routing and guards', () => {
     localStorage.setItem('gharse.session', JSON.stringify({ accessToken: 'a', refreshToken: 'r', user: { id: '1', name: 'Priya K', email: 'p@x.in', phone: '1', role: 'CUSTOMER', status: 'ACTIVE', createdAt: '' } }))
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ content: [], totalElements: 0, totalPages: 0, items: [], itemCount: 0, unread: 0 }), { status: 200 }))
     renderAt('/admin')
-    await waitFor(() => expect(screen.getByRole('heading', { name: /discover amazing/i })).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByRole('heading', { name: /find your taste of home/i })).toBeInTheDocument())
   })
   it('lists notifications and marks them as read', async () => {
     localStorage.setItem('gharse.session', JSON.stringify({ accessToken: 'a', refreshToken: 'r', user: { id: '1', name: 'Priya K', email: 'p@x.in', phone: '1', role: 'CUSTOMER', status: 'ACTIVE', createdAt: '' } }))
